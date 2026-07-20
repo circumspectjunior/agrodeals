@@ -150,6 +150,57 @@ export async function createBatch(
   return { id: batch.id };
 }
 
+export async function recordPayment(
+  farmerPaymentId: string,
+  input: { amount: string; paidDate: string },
+): Promise<{ error: string } | { success: true }> {
+  const amount = Number(input.amount);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { error: "Amount must be a positive number." };
+  }
+  if (!input.paidDate) {
+    return { error: "Date is required." };
+  }
+  const paidDate = new Date(input.paidDate);
+  if (Number.isNaN(paidDate.getTime()) || paidDate > new Date()) {
+    return { error: "Date must be a valid date and not in the future." };
+  }
+
+  const supabase = await createClient();
+
+  const { data: payment, error: paymentError } = await supabase
+    .from("farmer_payments")
+    .select("amount_owed, payment_events(amount)")
+    .eq("id", farmerPaymentId)
+    .single();
+
+  if (paymentError) {
+    return { error: paymentError.message };
+  }
+
+  const alreadyPaid = payment.payment_events.reduce((sum, event) => sum + event.amount, 0);
+  const remaining = payment.amount_owed - alreadyPaid;
+
+  if (amount > remaining) {
+    return {
+      error: `This would exceed the amount owed. Remaining balance: ${remaining}.`,
+    };
+  }
+
+  const { error: insertError } = await supabase.from("payment_events").insert({
+    farmer_payment_id: farmerPaymentId,
+    amount,
+    paid_date: input.paidDate,
+  });
+
+  if (insertError) {
+    return { error: insertError.message };
+  }
+
+  return { success: true };
+}
+
 export async function recheckEudrStatus(plotId: string): Promise<{ error: string } | { success: true }> {
   const supabase = await createClient();
 

@@ -172,7 +172,32 @@ Decisions locked in during brainstorming:
       to the farmer, and inserts the batch + its paired `farmer_payments`
       row together. `npm run build` and `tsc --noEmit` pass. Full
       click-through verified alongside the "Batches" section below.
-- [ ] Batches section + payment recording on farmer detail
+- [x] Batches section + payment recording on farmer detail
+      (`recordPayment` action, `RecordPaymentForm` component). Along the
+      way found **two real bugs**:
+      1. `batches`/`lots`/`lot_batches` only ever had `service_role`
+         grants (from Phase 0) — Phase 1 extended `authenticated` access
+         to `farmers`/`plots` only, since that's all it needed. Batch
+         logging failed with "permission denied for table batches" until
+         a new migration extended `authenticated` grants + RLS policies to
+         `batches`/`lots`/`lot_batches`.
+      2. The Supabase client has no generated types in this project, so
+         it infers every embedded relation (`plots(...)`,
+         `farmer_payments(...)`) as an array regardless of real
+         cardinality. Code written against that inference used `[0]`
+         indexing, but PostgREST actually returns a plain object for both
+         at runtime (plots is many-to-one; farmer_payments is one-to-one
+         since `batch_id` is unique) — so `[0]` silently returned
+         `undefined`, showing "EUDR status: unknown" and "Payment: Paid in
+         full" (a false positive, from `0 >= 0` when both owed/paid
+         defaulted to 0) on a freshly-logged, unpaid batch. Fixed with an
+         explicit `BatchRow` type reflecting the real runtime shape
+         instead of trusting the client's inference.
+      Verified end-to-end via Playwright: logged a batch, confirmed
+      correct EUDR status and "Unpaid (100 owed)", rejected an overpayment
+      attempt (150 against 100 owed) with the correct remaining-balance
+      message, then recorded a valid partial payment (40) and confirmed
+      "Partially paid (40 of 100)" plus the event history line.
 - [ ] Lot list + creation with rollup logic
 - [ ] Lot detail: price_offered edit + delete
 
