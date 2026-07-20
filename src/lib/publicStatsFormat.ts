@@ -47,11 +47,15 @@ export function formatFarmgatePrice(batch: FarmgateBatch): string {
   if (!batch) {
     return "No transactions yet.";
   }
+  // Matches formatEudrReadiness's "just getting started" framing — a bare
+  // price line reads as an aggregate/average to a fast skimmer, when it's
+  // actually a single real transaction. Say so explicitly.
+  const prefix = "We're just getting started — here's our first real transaction:";
   if (batch.weightKg === 0) {
-    return `₦${batch.amountOwed.toLocaleString("en-US")} paid for ${batch.weightKg}kg (${batch.grade}).`;
+    return `${prefix} ₦${batch.amountOwed.toLocaleString("en-US")} paid for ${batch.weightKg}kg (${batch.grade}).`;
   }
   const perKg = Math.round(batch.amountOwed / batch.weightKg);
-  return `₦${batch.amountOwed.toLocaleString("en-US")} paid for ${batch.weightKg}kg (${batch.grade}) ≈ ₦${perKg.toLocaleString("en-US")}/kg`;
+  return `${prefix} ₦${batch.amountOwed.toLocaleString("en-US")} paid for ${batch.weightKg}kg (${batch.grade}) ≈ ₦${perKg.toLocaleString("en-US")}/kg`;
 }
 
 export function formatEudrReadiness(

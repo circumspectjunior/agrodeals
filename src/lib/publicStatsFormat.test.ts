@@ -52,7 +52,9 @@ describe("formatFarmgatePrice", () => {
         grade: "Grade I",
         amountOwed: 500000,
       }),
-    ).toBe("₦500,000 paid for 200kg (Grade I) ≈ ₦2,500/kg");
+    ).toBe(
+      "We're just getting started — here's our first real transaction: ₦500,000 paid for 200kg (Grade I) ≈ ₦2,500/kg",
+    );
   });
 
   it("shows an honest no-transactions state when there's no batch yet", () => {
@@ -67,7 +69,9 @@ describe("formatFarmgatePrice", () => {
         grade: "Grade I",
         amountOwed: 100,
       }),
-    ).toBe("₦100 paid for 0kg (Grade I).");
+    ).toBe(
+      "We're just getting started — here's our first real transaction: ₦100 paid for 0kg (Grade I).",
+    );
   });
 });
 
