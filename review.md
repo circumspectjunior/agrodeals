@@ -110,6 +110,23 @@ Decisions locked in during brainstorming:
       "Pending — Whisp not configured yet" → "Recheck EUDR status" re-runs
       cleanly and stays `not_configured`, no crash.
 
+**Update once a real `WHISP_API_KEY` became available**: the live API's
+response shape doesn't match its own docs. `/submit/geojson` can complete
+*synchronously* (`code: "analysis_completed"` in the submit response
+itself, not just the poll response), and the token lives at
+`context.token`, not top-level `token` as the docs implied. The original
+implementation would have misread every successful synchronous check as
+`failed`. Fixed `src/lib/whisp.ts` to check for synchronous completion
+first and read the token from the right place; both endpoints share the
+same `{code, data, context}` envelope. Verified live for real: a point in
+Ondo State (Nigeria's cocoa belt) returned `risk_pcrop: "low"` end-to-end,
+both via direct function call and through the actual UI (immediate check
+on plot creation, and via "Recheck EUDR status" on the existing pending
+plot — which now correctly shows "EUDR status: low" and the recheck button
+disappears once complete). This closes the "known limitation" noted in
+the PR — the complete/success path is now proven against the real API, not
+just designed against its docs.
+
 ## Phase 2+
 
 Not started.

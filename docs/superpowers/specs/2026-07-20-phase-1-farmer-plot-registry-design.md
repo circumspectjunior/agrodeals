@@ -112,6 +112,16 @@ Called once from the plot-creation Server Action, right after the plot row
 is inserted, to backfill `eudr_check_status`/`eudr_risk_status` via an
 update.
 
+> **Post-implementation correction** (once a real `WHISP_API_KEY` became
+> available): the live API's response shape doesn't match its published
+> docs. `/submit/geojson` can complete *synchronously* (`code:
+> "analysis_completed"` in the submit response itself), and the token
+> lives at `context.token`, not a top-level `token` field. Both endpoints
+> share the same `{code, data, context}` envelope. The implementation
+> checks for synchronous completion before falling back to polling. See
+> `review.md` for the live verification (Ondo State point → `risk_pcrop:
+> "low"`, end-to-end through the actual UI).
+
 ### Manual recheck
 
 A `recheckEudrStatus(plotId)` Server Action re-fetches the plot's

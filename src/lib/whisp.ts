@@ -9,8 +9,13 @@ export type EudrCheckResult = {
   risk: string | null;
 };
 
-type WhispStatusResponse = {
+// Whisp's actual response shape (verified live) differs from its docs: both
+// /submit/geojson and /status/{token} return this same envelope. A submit
+// can complete synchronously (code "analysis_completed") — polling only
+// kicks in when it doesn't.
+type WhispApiResponse = {
   code: string;
+  message?: string;
   data?: {
     features?: Array<{
       properties?: {
@@ -18,15 +23,23 @@ type WhispStatusResponse = {
       };
     }>;
   };
+  context?: {
+    token?: string;
+  };
 };
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Submits a plot's coordinates to Whisp and polls for a deforestation-risk
-// result. Never fabricates a status: returns `not_configured` (no network
-// call at all) when there's no API key, rather than a placeholder value.
+function extractRisk(response: WhispApiResponse): string | null {
+  return response.data?.features?.[0]?.properties?.risk_pcrop ?? null;
+}
+
+// Submits a plot's coordinates to Whisp and, if not already complete,
+// polls for a deforestation-risk result. Never fabricates a status:
+// returns `not_configured` (no network call at all) when there's no API
+// key, rather than a placeholder value.
 export async function getEudrRiskStatus(lat: number, lng: number): Promise<EudrCheckResult> {
   const apiKey = process.env.WHISP_API_KEY;
 
@@ -34,7 +47,7 @@ export async function getEudrRiskStatus(lat: number, lng: number): Promise<EudrC
     return { status: "not_configured", risk: null };
   }
 
-  let token: string;
+  let submitData: WhispApiResponse;
   try {
     const submitResponse = await fetch(`${WHISP_BASE_URL}/submit/geojson`, {
       method: "POST",
@@ -64,14 +77,24 @@ export async function getEudrRiskStatus(lat: number, lng: number): Promise<EudrC
       return { status: "failed", risk: null };
     }
 
-    const submitData = (await submitResponse.json()) as { token?: string };
-    if (!submitData.token) {
-      console.error("Whisp submit response missing token:", submitData);
-      return { status: "failed", risk: null };
-    }
-    token = submitData.token;
+    submitData = (await submitResponse.json()) as WhispApiResponse;
   } catch (err) {
     console.error("Whisp submit request threw:", err);
+    return { status: "failed", risk: null };
+  }
+
+  if (submitData.code === "analysis_completed") {
+    const risk = extractRisk(submitData);
+    if (!risk) {
+      console.error("Whisp result missing risk_pcrop:", submitData);
+      return { status: "failed", risk: null };
+    }
+    return { status: "complete", risk };
+  }
+
+  const token = submitData.context?.token;
+  if (!token) {
+    console.error("Whisp submit response missing context.token:", submitData);
     return { status: "failed", risk: null };
   }
 
@@ -90,17 +113,17 @@ export async function getEudrRiskStatus(lat: number, lng: number): Promise<EudrC
         return { status: "failed", risk: null };
       }
 
-      const statusData = (await statusResponse.json()) as WhispStatusResponse;
-      const feature = statusData.data?.features?.[0];
+      const statusData = (await statusResponse.json()) as WhispApiResponse;
 
-      if (feature) {
-        const risk = feature.properties?.risk_pcrop;
+      if (statusData.code === "analysis_completed") {
+        const risk = extractRisk(statusData);
         if (!risk) {
           console.error("Whisp result missing risk_pcrop:", statusData);
           return { status: "failed", risk: null };
         }
         return { status: "complete", risk };
       }
+      // Any other code means still processing — keep polling.
     } catch (err) {
       console.error("Whisp status poll threw:", err);
       return { status: "failed", risk: null };
