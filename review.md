@@ -355,7 +355,15 @@ Decisions locked in during brainstorming:
       against the real dev DB: shows "We're just getting started — 1
       farmer, 1 plot mapped, 200kg traced so far" and "100%
       EUDR-verified", matching Patrick Ojo's real data exactly.
-- [ ] Transparency page (/transparency)
+- [x] Transparency page (/transparency), plus a Nav link so it's
+      discoverable. Verified via Playwright against the real dev DB: real
+      farmgate price ("₦500,000 paid for 200kg (Grade I) ≈ ₦2,500/kg"),
+      honest "Not yet disclosed" buyer price, real EUDR readiness ("1 of 1
+      verified plot so far is low deforestation risk"), no testimonial
+      section. Same `force-dynamic` fix applied as Home, for the same
+      reason.
+
+Phase 3 complete. All 3 tasks done and verified against real data.
 
 ## Phase 4+
 
