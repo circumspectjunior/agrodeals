@@ -166,7 +166,12 @@ Decisions locked in during brainstorming:
 - [x] Add `farmer_payments`/`payment_events` migration + `authenticated`
       RLS. Verified: schema matches spec exactly; `anon` denied,
       `authenticated` (signed-in test account) can select cleanly.
-- [ ] Batch logging flow
+- [x] Batch logging flow (`/admin/farmers/[id]/batches/new`, `createBatch`
+      action). Validates weight/moisture/fermentation/grade/harvest date/
+      amount owed server-side, checks the selected plot actually belongs
+      to the farmer, and inserts the batch + its paired `farmer_payments`
+      row together. `npm run build` and `tsc --noEmit` pass. Full
+      click-through verified alongside the "Batches" section below.
 - [ ] Batches section + payment recording on farmer detail
 - [ ] Lot list + creation with rollup logic
 - [ ] Lot detail: price_offered edit + delete
