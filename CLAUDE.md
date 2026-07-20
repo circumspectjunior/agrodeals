@@ -73,6 +73,12 @@ deliberate future decision, not a default.
   `{code, data, context}` envelope — see `src/lib/whisp.ts`. Also:
   `risk_pcrop` isn't only low/medium/high — `more_info_needed` is a real
   value too (seen on a forested point that needs more context to classify).
+  Plot geometry is point-based today **by design**, not as a stopgap —
+  EUDR only requires a point for plots under ~4ha, which covers AgroDeal's
+  smallholders. Boundary-polygon capture via QGIS + the Whisp QGIS plugin
+  is a planned future upgrade (see plan.md Section 9), not a gap to fix
+  now — don't second-guess the point-based approach without checking there
+  first.
 - WhatsApp as the intended farmer-facing intake channel — most farmers
   will not use a web form directly
 

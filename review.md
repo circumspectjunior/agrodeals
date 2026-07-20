@@ -142,6 +142,150 @@ default-low response. Note for later: `risk_pcrop` can be
 this fine since it just displays whatever Whisp returns, but worth knowing
 when designing any future UI that branches on the risk value specifically.
 
-## Phase 2+
+## Phase 2 — Batch & Lot Management
+
+Spec: `docs/superpowers/specs/2026-07-20-phase-2-batch-lot-management-design.md`
+
+Decisions locked in during brainstorming:
+- amount_owed: manual entry, fixed at batch-logging time, never edited
+- payment_events audit trail (not a stored running total) — amount_paid
+  is always `sum(payment_events.amount)`, computed at query time
+- Grade is a fixed dropdown (Grade I/II/III/Ungraded); Ungraded ranks
+  worst for blended_grade — not for symmetry with the EUDR rollup, but as
+  a deliberate incentive to keep grading disciplined (grade is a required
+  choice made in the moment, unlike an EUDR check that takes time)
+- eudr_status_rollup = "low" only if every included batch's plot is
+  complete+low; otherwise null, never a fabricated/averaged claim
+- Lot batch composition fixed at creation; price_offered is the one
+  editable field, and editing it must never recompute the rollup fields
+- Lots are deletable (recovers from mis-clicks) unless a Sale is attached
+  (existing FK protection)
+
+### Tasks
+
+- [x] Add `farmer_payments`/`payment_events` migration + `authenticated`
+      RLS. Verified: schema matches spec exactly; `anon` denied,
+      `authenticated` (signed-in test account) can select cleanly.
+- [x] Batch logging flow (`/admin/farmers/[id]/batches/new`, `createBatch`
+      action). Validates weight/moisture/fermentation/grade/harvest date/
+      amount owed server-side, checks the selected plot actually belongs
+      to the farmer, and inserts the batch + its paired `farmer_payments`
+      row together. `npm run build` and `tsc --noEmit` pass. Full
+      click-through verified alongside the "Batches" section below.
+- [x] Batches section + payment recording on farmer detail
+      (`recordPayment` action, `RecordPaymentForm` component). Along the
+      way found **two real bugs**:
+      1. `batches`/`lots`/`lot_batches` only ever had `service_role`
+         grants (from Phase 0) — Phase 1 extended `authenticated` access
+         to `farmers`/`plots` only, since that's all it needed. Batch
+         logging failed with "permission denied for table batches" until
+         a new migration extended `authenticated` grants + RLS policies to
+         `batches`/`lots`/`lot_batches`.
+      2. The Supabase client has no generated types in this project, so
+         it infers every embedded relation (`plots(...)`,
+         `farmer_payments(...)`) as an array regardless of real
+         cardinality. Code written against that inference used `[0]`
+         indexing, but PostgREST actually returns a plain object for both
+         at runtime (plots is many-to-one; farmer_payments is one-to-one
+         since `batch_id` is unique) — so `[0]` silently returned
+         `undefined`, showing "EUDR status: unknown" and "Payment: Paid in
+         full" (a false positive, from `0 >= 0` when both owed/paid
+         defaulted to 0) on a freshly-logged, unpaid batch. Fixed with an
+         explicit `BatchRow` type reflecting the real runtime shape
+         instead of trusting the client's inference.
+      Verified end-to-end via Playwright: logged a batch, confirmed
+      correct EUDR status and "Unpaid (100 owed)", rejected an overpayment
+      attempt (150 against 100 owed) with the correct remaining-balance
+      message, then recorded a valid partial payment (40) and confirmed
+      "Partially paid (40 of 100)" plus the event history line.
+- [x] Lot list + creation with rollup logic (`/admin/lots`,
+      `/admin/lots/new`, `createLot`). Along the way found the "batch
+      belongs to at most one lot" rule was only a UI convention —
+      `lot_batches` had no unique constraint on `batch_id`, so a bug could
+      have double-assigned a batch. Added a migration enforcing it at the
+      DB level. Verified via Playwright + direct DB checks with 3 test
+      batches (low/Grade I, more_info_needed/Grade III, low/Ungraded):
+      selecting the two "low" batches (one Ungraded) produced
+      `total_weight: 70`, `blended_grade: "Ungraded"` (worst wins),
+      `eudr_status_rollup: "low"`; the remaining `more_info_needed` batch
+      correctly became a separate lot with `eudr_status_rollup: null`
+      (shown as "needs attention") and `price_offered: 500`. Confirmed the
+      already-assigned batches no longer appear as selectable in a new
+      lot's form.
+- [x] Lot detail: price_offered edit + delete (`/admin/lots/[id]`,
+      `updatePriceOffered`, `deleteLot`). Lists exactly which constituent
+      plots need attention when `eudr_status_rollup` is null (e.g.
+      "Farmer NeedsCheck's batch (2026-07-12): plot is more_info_needed").
+      Verified via Playwright + direct DB checks: updating price_offered
+      (500 → 750) changed only that column — `total_weight`,
+      `blended_grade`, and `eudr_status_rollup` stayed untouched; deleting
+      a lot removed it from the list and released its batch back into the
+      unassigned pool (selectable again on `/admin/lots/new`). Deleting a
+      lot with a Sale attached remains unverified this phase — no
+      Sale-creation UI exists yet (Phase 4); the FK protection exists in
+      the schema but only a manual DB-level insert could exercise the
+      rejection path right now, same shape as the Phase 1 Whisp
+      complete/failed gap.
+
+Phase 2 complete. All 5 tasks done and verified.
+
+### Post-review follow-up: scrutinizing the payment-ledger bug before merge
+
+Before approving the PR, the founder pushed back on the bug list rather
+than accepting the summary at face value — specifically on the
+false-positive "Paid in full" bug, since this table is the one place in
+the system where a wrong-but-plausible number is worse than an obvious
+error. Answering that scrutiny honestly, with verification, rather than
+just restating the original summary:
+
+- **How it was caught**: deliberate manual Playwright verification of the
+  first-use case (log a batch, check its status immediately), not an
+  automated test — this project has none. It was always going to surface
+  on the very first manual pass, which is reassuring for *that* instance
+  but doesn't mean the same class of bug couldn't hide somewhere less
+  obvious.
+- **Checked for the same pattern elsewhere**: grepped and manually
+  reviewed all 5 embedded-relation query sites in the codebase. The other
+  4 either are genuine one-to-many relations correctly treated as arrays
+  (`payment_events` from `farmer_payments`) or were written after this bug
+  and already match the real runtime shape. No other silent instance
+  found — but this was a static check, not a regression test; nothing
+  stops a future 6th site from repeating the mistake.
+- **The "batch belongs to at most one lot" constraint**: confirmed via
+  `git log` that the unique constraint (commit 9e1eb9b) landed *before*
+  `createLot` was ever written or run (commit f0ab7ef) — no batch was ever
+  double-assigned, even transiently, during testing. Also confirmed live
+  that it's a real Postgres constraint, not an app-layer check: a direct
+  `lot_batches` insert attempting to reuse an already-assigned `batch_id`
+  (bypassing the app entirely) was rejected with `23505 duplicate key
+  value violates unique constraint "lot_batches_batch_id_unique"`.
+
+**Regression test added, with an honest caveat about what it does and
+doesn't cover**: extracted the payment-status computation into a pure
+function (`src/lib/payments.ts`, `computePaymentStatus`/
+`formatPaymentStatus`) and added the project's first automated tests
+(`npm test`, via Vitest — reverses the Phase 0 "manual verification only"
+decision specifically for this one trust-critical piece). The test
+reproduces the exact input that should never look "paid": zero events
+against a real owed amount must compute as `unpaid`, never
+`paid_in_full`.
+
+Important limitation, stated plainly rather than oversold: this unit test
+does **not** actually guard against the original root cause. The original
+bug was never in the arithmetic (`paidTotal >= amountOwed` was always
+correct) — it was that `payment` itself silently became `undefined` from
+the Supabase relation-typing mistake, so `amount_owed ?? 0` masked a
+missing record as a real zero. A pure-function test can't catch a wrong
+*extraction* of its own inputs. The actual fix for that failure mode is a
+defensive code change in `src/app/admin/farmers/[id]/page.tsx`: since
+every batch is guaranteed exactly one `farmer_payments` row (inserted
+atomically in `createBatch`), a missing `payment` now renders a loud
+"No payment record found for this batch — data integrity issue" warning
+instead of silently defaulting to a plausible-looking 0/0. That's the
+change that actually closes the original failure mode; the unit test is a
+real but narrower guard against a *different* future risk (someone
+breaking the arithmetic itself).
+
+## Phase 3+
 
 Not started.
