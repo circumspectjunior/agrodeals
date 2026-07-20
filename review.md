@@ -345,7 +345,16 @@ Decisions locked in during brainstorming:
       (Grade I) ≈ ₦2,500/kg`) and zero-farmer/zero-batch states. `npm run
       build` confirms the `server-only` guard doesn't break the actual
       Next.js build.
-- [ ] Home page (/)
+- [x] Home page (/) — mission/process copy adapted from plan.md's Vision
+      section, live metrics via `formatHomeStats`. Along the way found the
+      page was being **statically prerendered at build time** (unlike the
+      admin pages, the service-role client doesn't use cookies, so it
+      doesn't automatically opt into per-request rendering) — would have
+      frozen "live" metrics until the next deploy. Fixed with
+      `export const dynamic = "force-dynamic"`. Verified via Playwright
+      against the real dev DB: shows "We're just getting started — 1
+      farmer, 1 plot mapped, 200kg traced so far" and "100%
+      EUDR-verified", matching Patrick Ojo's real data exactly.
 - [ ] Transparency page (/transparency)
 
 ## Phase 4+
