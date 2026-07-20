@@ -142,6 +142,35 @@ default-low response. Note for later: `risk_pcrop` can be
 this fine since it just displays whatever Whisp returns, but worth knowing
 when designing any future UI that branches on the risk value specifically.
 
-## Phase 2+
+## Phase 2 — Batch & Lot Management
+
+Spec: `docs/superpowers/specs/2026-07-20-phase-2-batch-lot-management-design.md`
+
+Decisions locked in during brainstorming:
+- amount_owed: manual entry, fixed at batch-logging time, never edited
+- payment_events audit trail (not a stored running total) — amount_paid
+  is always `sum(payment_events.amount)`, computed at query time
+- Grade is a fixed dropdown (Grade I/II/III/Ungraded); Ungraded ranks
+  worst for blended_grade — not for symmetry with the EUDR rollup, but as
+  a deliberate incentive to keep grading disciplined (grade is a required
+  choice made in the moment, unlike an EUDR check that takes time)
+- eudr_status_rollup = "low" only if every included batch's plot is
+  complete+low; otherwise null, never a fabricated/averaged claim
+- Lot batch composition fixed at creation; price_offered is the one
+  editable field, and editing it must never recompute the rollup fields
+- Lots are deletable (recovers from mis-clicks) unless a Sale is attached
+  (existing FK protection)
+
+### Tasks
+
+- [x] Add `farmer_payments`/`payment_events` migration + `authenticated`
+      RLS. Verified: schema matches spec exactly; `anon` denied,
+      `authenticated` (signed-in test account) can select cleanly.
+- [ ] Batch logging flow
+- [ ] Batches section + payment recording on farmer detail
+- [ ] Lot list + creation with rollup logic
+- [ ] Lot detail: price_offered edit + delete
+
+## Phase 3+
 
 Not started.
