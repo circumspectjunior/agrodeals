@@ -88,3 +88,12 @@ alter table lots enable row level security;
 alter table lot_batches enable row level security;
 alter table buyers enable row level security;
 alter table sales enable row level security;
+
+-- This Supabase version does not auto-grant table privileges to the Data
+-- API roles (see `auto_expose_new_tables` in supabase/config.toml), so the
+-- service_role key would otherwise get "permission denied" even though it's
+-- meant to bypass RLS. `anon`/`authenticated` intentionally get no grants
+-- here — they stay fully locked out until a phase that needs public/user
+-- access adds its own policies and grants.
+grant usage on schema public to service_role;
+grant all on all tables in schema public to service_role;

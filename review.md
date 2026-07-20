@@ -37,8 +37,13 @@ Decisions locked in during brainstorming/discovery:
       lot_batches, buyers, sales — RLS on, no policies yet). Verified via
       `supabase db reset` + REST API schema introspection: all 7 tables
       present with expected columns, no `payments` table.
-- [ ] Supabase client helpers (`src/lib/supabase/client.ts`,
-      `src/lib/supabase/server.ts`)
+- [x] Supabase client helpers (`src/lib/supabase/client.ts`,
+      `src/lib/supabase/server.ts`) via `@supabase/ssr`. Along the way found
+      that this Supabase version doesn't auto-grant table privileges to
+      Data API roles (`auto_expose_new_tables` now defaults off) — even
+      `service_role` got "permission denied" until the migration explicitly
+      granted it. Fixed in the schema migration; verified service_role can
+      query `farmers` (anon/authenticated intentionally stay ungranted).
 - [ ] Shared layout components (Container, Nav, Footer) wired into
       `src/app/layout.tsx`
 - [ ] Admin auth: middleware gating `/admin`, login page, `scripts/seed-
