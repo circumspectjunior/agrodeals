@@ -213,6 +213,26 @@ credible once they're showing real data instead of placeholders.
 | Contact/inquiry email | Resend — 3,000 emails/month free | https://resend.com |
 | Farmer field GPS capture | Open Foris Ground (mobile app, free) | https://www.openforis.org/ (Ground tool) |
 
+### Future upgrade (tracked, not urgent — no target phase yet)
+
+Plot geometry is currently captured as a manual lat/lng point (Phase 1,
+already built and tested against the live Whisp API). This works because
+Whisp only requires a GPS point for plots under ~4 hectares, which covers
+AgroDeal's smallholder farmers for now — see the Phase 1 design spec and
+CLAUDE.md for the EUDR point-vs-polygon research.
+
+The founder is learning QGIS (via a course) and plans to adopt it later
+for capturing real plot *boundaries* (polygons) instead of a point,
+using the Whisp QGIS plugin
+(https://github.com/forestdatapartnership/whisp-plugin) to submit
+boundaries directly to Whisp. This is not a replacement for Whisp — Whisp
+remains the risk-assessment engine either way — it's an upgrade to how
+plot geometry gets captured and submitted.
+
+Worth doing once:
+- A plot approaches or exceeds the 4-hectare point-based threshold, or
+- Boundary precision matters more than it does for early pilot farmers
+
 ---
 
 ## 10. Open Decisions
