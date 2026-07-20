@@ -60,6 +60,37 @@ Decisions locked in during brainstorming/discovery:
       timeout mid-test (resource contention with the other local Supabase
       project also running) — retried and it passed; not a code issue.
 
-## Phase 1+ 
+## Phase 1 — Farmer & Plot Registry
+
+Spec: `docs/superpowers/specs/2026-07-20-phase-1-farmer-plot-registry-design.md`
+
+Key research finding: EUDR only requires a single GPS point for plots
+under 4ha (full polygon only mandated at ≥4ha) — resolves the Phase 0
+open item, since AgroDeal's smallholder farmers mostly qualify for
+point-based capture.
+
+Decisions locked in during brainstorming:
+- No Whisp API key yet — integration built so a real key is a drop-in,
+  never fabricates a status in the meantime
+- Manual lat/lng entry, no map picker
+- No farmer photo upload this phase (`photo_url` stays a plain URL field)
+- One farmer/one plot per creation flow — UI simplification only, not a
+  schema constraint (farmer detail page always offers "add another plot")
+- Manual "Recheck EUDR status" action included now, not deferred
+- `plots.eudr_check_status` (not_configured/pending/failed/complete) added
+  so a real Whisp failure can never look identical to "not configured yet"
+
+### Tasks
+
+- [x] Add `plots.eudr_check_status` migration + `authenticated` RLS
+      policies on farmers/plots. Verified: `anon` still gets "permission
+      denied"; `authenticated` (signed-in test account) can select/insert
+      cleanly; new column present with the expected default/check
+      constraint.
+- [ ] Build Whisp integration (`src/lib/whisp.ts`)
+- [ ] Farmer create flow
+- [ ] Plot create flow + Whisp call + recheck action
+
+## Phase 2+
 
 Not started.
