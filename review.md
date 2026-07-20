@@ -87,7 +87,12 @@ Decisions locked in during brainstorming:
       denied"; `authenticated` (signed-in test account) can select/insert
       cleanly; new column present with the expected default/check
       constraint.
-- [ ] Build Whisp integration (`src/lib/whisp.ts`)
+- [x] Build Whisp integration (`src/lib/whisp.ts`) — submit/poll against
+      the real documented API shape. Verified the no-key path returns
+      `{status: "not_configured", risk: null}` instantly with no network
+      call attempted. The complete/failed/pending paths remain untested
+      until a real `WHISP_API_KEY` is available (known limitation, see
+      spec).
 - [ ] Farmer create flow
 - [ ] Plot create flow + Whisp call + recheck action
 
