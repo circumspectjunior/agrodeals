@@ -198,7 +198,20 @@ Decisions locked in during brainstorming:
       attempt (150 against 100 owed) with the correct remaining-balance
       message, then recorded a valid partial payment (40) and confirmed
       "Partially paid (40 of 100)" plus the event history line.
-- [ ] Lot list + creation with rollup logic
+- [x] Lot list + creation with rollup logic (`/admin/lots`,
+      `/admin/lots/new`, `createLot`). Along the way found the "batch
+      belongs to at most one lot" rule was only a UI convention —
+      `lot_batches` had no unique constraint on `batch_id`, so a bug could
+      have double-assigned a batch. Added a migration enforcing it at the
+      DB level. Verified via Playwright + direct DB checks with 3 test
+      batches (low/Grade I, more_info_needed/Grade III, low/Ungraded):
+      selecting the two "low" batches (one Ungraded) produced
+      `total_weight: 70`, `blended_grade: "Ungraded"` (worst wins),
+      `eudr_status_rollup: "low"`; the remaining `more_info_needed` batch
+      correctly became a separate lot with `eudr_status_rollup: null`
+      (shown as "needs attention") and `price_offered: 500`. Confirmed the
+      already-assigned batches no longer appear as selectable in a new
+      lot's form.
 - [ ] Lot detail: price_offered edit + delete
 
 ## Phase 3+
