@@ -365,6 +365,31 @@ Decisions locked in during brainstorming:
 
 Phase 3 complete. All 3 tasks done and verified against real data.
 
+### Post-review follow-up: production-build verification + copy polish
+
+Before merging, the founder asked for three things beyond the design-level
+summary:
+
+- **Confirmed `force-dynamic` on both routes** (grep, not just memory).
+- **Proved the dynamic rendering actually works in production**, not just
+  in dev (where everything re-renders regardless): ran `npm run build` +
+  `next start`, added a temporary batch directly (50kg, Grade III,
+  earlier harvest date than Patrick's real batch — so it became the new
+  "earliest batch" shown), refreshed `/transparency` and `/` with no
+  rebuild/restart, and confirmed both pages picked up the new numbers
+  immediately (₦100,000/50kg on Transparency, 250kg traced on Home).
+  Deleted the temporary batch afterward and confirmed both pages reverted
+  to exactly the original real-data state (₦500,000/200kg).
+- **Read `/transparency` cold, as a stranger would** (screenshot of the
+  live production build, not just trusting the design description). Found
+  one honest gap: the EUDR readiness section said "we're just getting
+  started" but the farmgate price line was a bare number a fast skimmer
+  could misread as an aggregate/average rather than the one real
+  transaction it is. Fixed: `formatFarmgatePrice` now leads with the same
+  "We're just getting started — here's our first real transaction:"
+  framing as `formatEudrReadiness`, so every section signals early-stage
+  explicitly rather than relying on the intro paragraph alone.
+
 ## Phase 4+
 
 Not started.
