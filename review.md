@@ -49,8 +49,16 @@ Decisions locked in during brainstorming/discovery:
       homepage with a minimal AgroDeal placeholder (no links to unbuilt
       pages). Verified via `npm run build` and a dev-server curl check
       that Nav/Footer render around the page content.
-- [ ] Admin auth: middleware gating `/admin`, login page, `scripts/seed-
-      admin.ts`, placeholder `/admin` page
+- [x] Admin auth: middleware (`src/middleware.ts`) gating `/admin/*` via
+      Supabase session, login page, `scripts/seed-admin.mjs` (plain JS, no
+      new tooling — run with `node --env-file=.env.local`), placeholder
+      `/admin` page. Verified end-to-end via Playwright against the dev
+      server with a throwaway local account (`test-admin@agrodeal.local`,
+      wiped on next `supabase db reset`): unauthenticated `/admin` redirects
+      to `/admin/login`; signing in reaches `/admin` showing "Signed in as
+      test-admin@agrodeal.local." Hit one transient Docker DB-connection
+      timeout mid-test (resource contention with the other local Supabase
+      project also running) — retried and it passed; not a code issue.
 
 ## Phase 1+ 
 
