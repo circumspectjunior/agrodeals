@@ -4,6 +4,20 @@ Tracks what's actually been done, phase by phase. Update as work lands —
 this is a running log, not a plan (see `docs/superpowers/specs/` for specs
 and `plan.md` for the business/phase plan).
 
+## Real data milestone (2026-07-20/21)
+
+First real farmer entered via the actual admin UI (not test data): **Patrick
+Ojo**, Okokodo village, +2347036803856. Plot at 6.746396, 5.668334 — real
+Whisp check returned `EUDR status: low`. One real batch: 200 kg, Grade II,
+harvested 2026-07-10, ₦500,000 owed (unpaid as of entry). Throwaway test
+farmers from Phase 2 verification (Farmer Low/NeedsCheck/Ungraded) were
+deleted from the local dev DB at the same time so they don't pollute any
+Phase 3 "live metrics."
+
+Note for Phase 3: the schema has no currency field — `amount_owed` is a
+bare number. ₦500,000 was entered as-is (500000); any public-facing price
+display needs to decide how to label currency unambiguously.
+
 ## Phase 0 — Foundation
 
 Spec: `docs/superpowers/specs/2026-07-20-phase-0-foundation-design.md`
