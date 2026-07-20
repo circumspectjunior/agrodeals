@@ -33,8 +33,10 @@ Decisions locked in during brainstorming/discovery:
       analytics/realtime/storage/edge-runtime disabled since Phase 0 doesn't
       need them and Docker memory is constrained (~3.8GB total, shared with
       the other project's stack)
-- [ ] Write Section 4 schema migration (farmers, plots, batches, lots,
-      lot_batches, buyers, sales — RLS on, no policies yet)
+- [x] Write Section 4 schema migration (farmers, plots, batches, lots,
+      lot_batches, buyers, sales — RLS on, no policies yet). Verified via
+      `supabase db reset` + REST API schema introspection: all 7 tables
+      present with expected columns, no `payments` table.
 - [ ] Supabase client helpers (`src/lib/supabase/client.ts`,
       `src/lib/supabase/server.ts`)
 - [ ] Shared layout components (Container, Nav, Footer) wired into
