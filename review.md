@@ -93,7 +93,14 @@ Decisions locked in during brainstorming:
       call attempted. The complete/failed/pending paths remain untested
       until a real `WHISP_API_KEY` is available (known limitation, see
       spec).
-- [ ] Farmer create flow
+- [x] Farmer create flow (`/admin/farmers`, `/admin/farmers/new`,
+      `createFarmer` action). `npm run build` passes; the insert path was
+      already verified against RLS in the previous task. Full click-through
+      (including the post-create redirect target) verified alongside the
+      plot flow below, since `/admin/farmers/[id]` belongs to that task.
+      Noted but out of scope: Next.js 16 flags `src/middleware.ts` as
+      deprecated in favor of `proxy.ts` — pre-existing from Phase 0, minor
+      follow-up, not fixed in this PR.
 - [ ] Plot create flow + Whisp call + recheck action
 
 ## Phase 2+
