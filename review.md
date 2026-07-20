@@ -44,8 +44,11 @@ Decisions locked in during brainstorming/discovery:
       `service_role` got "permission denied" until the migration explicitly
       granted it. Fixed in the schema migration; verified service_role can
       query `farmers` (anon/authenticated intentionally stay ungranted).
-- [ ] Shared layout components (Container, Nav, Footer) wired into
-      `src/app/layout.tsx`
+- [x] Shared layout components (Container, Nav, Footer) wired into
+      `src/app/layout.tsx`; replaced the create-next-app placeholder
+      homepage with a minimal AgroDeal placeholder (no links to unbuilt
+      pages). Verified via `npm run build` and a dev-server curl check
+      that Nav/Footer render around the page content.
 - [ ] Admin auth: middleware gating `/admin`, login page, `scripts/seed-
       admin.ts`, placeholder `/admin` page
 
