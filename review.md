@@ -101,7 +101,14 @@ Decisions locked in during brainstorming:
       Noted but out of scope: Next.js 16 flags `src/middleware.ts` as
       deprecated in favor of `proxy.ts` — pre-existing from Phase 0, minor
       follow-up, not fixed in this PR.
-- [ ] Plot create flow + Whisp call + recheck action
+- [x] Plot create flow + Whisp call + recheck action
+      (`/admin/farmers/[id]`, `/admin/farmers/[id]/plots/new`, `createPlot`,
+      `recheckEudrStatus`). Verified end-to-end via Playwright against the
+      dev server: farmer creation → farmer detail (no plots yet) → plot
+      form rejects an out-of-range latitude with an inline error → valid
+      submission creates the plot, shows "6.524379, 3.379206 · 1.5 ha" and
+      "Pending — Whisp not configured yet" → "Recheck EUDR status" re-runs
+      cleanly and stays `not_configured`, no crash.
 
 ## Phase 2+
 
