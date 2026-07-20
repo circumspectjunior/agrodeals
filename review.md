@@ -60,6 +60,88 @@ Decisions locked in during brainstorming/discovery:
       timeout mid-test (resource contention with the other local Supabase
       project also running) — retried and it passed; not a code issue.
 
-## Phase 1+ 
+## Phase 1 — Farmer & Plot Registry
+
+Spec: `docs/superpowers/specs/2026-07-20-phase-1-farmer-plot-registry-design.md`
+
+Key research finding: EUDR only requires a single GPS point for plots
+under 4ha (full polygon only mandated at ≥4ha) — resolves the Phase 0
+open item, since AgroDeal's smallholder farmers mostly qualify for
+point-based capture.
+
+Decisions locked in during brainstorming:
+- No Whisp API key yet — integration built so a real key is a drop-in,
+  never fabricates a status in the meantime
+- Manual lat/lng entry, no map picker
+- No farmer photo upload this phase (`photo_url` stays a plain URL field)
+- One farmer/one plot per creation flow — UI simplification only, not a
+  schema constraint (farmer detail page always offers "add another plot")
+- Manual "Recheck EUDR status" action included now, not deferred
+- `plots.eudr_check_status` (not_configured/pending/failed/complete) added
+  so a real Whisp failure can never look identical to "not configured yet"
+
+### Tasks
+
+- [x] Add `plots.eudr_check_status` migration + `authenticated` RLS
+      policies on farmers/plots. Verified: `anon` still gets "permission
+      denied"; `authenticated` (signed-in test account) can select/insert
+      cleanly; new column present with the expected default/check
+      constraint.
+- [x] Build Whisp integration (`src/lib/whisp.ts`) — submit/poll against
+      the real documented API shape. Verified the no-key path returns
+      `{status: "not_configured", risk: null}` instantly with no network
+      call attempted. The complete/failed/pending paths remain untested
+      until a real `WHISP_API_KEY` is available (known limitation, see
+      spec).
+- [x] Farmer create flow (`/admin/farmers`, `/admin/farmers/new`,
+      `createFarmer` action). `npm run build` passes; the insert path was
+      already verified against RLS in the previous task. Full click-through
+      (including the post-create redirect target) verified alongside the
+      plot flow below, since `/admin/farmers/[id]` belongs to that task.
+      Noted but out of scope: Next.js 16 flags `src/middleware.ts` as
+      deprecated in favor of `proxy.ts` — pre-existing from Phase 0, minor
+      follow-up, not fixed in this PR.
+- [x] Plot create flow + Whisp call + recheck action
+      (`/admin/farmers/[id]`, `/admin/farmers/[id]/plots/new`, `createPlot`,
+      `recheckEudrStatus`). Verified end-to-end via Playwright against the
+      dev server: farmer creation → farmer detail (no plots yet) → plot
+      form rejects an out-of-range latitude with an inline error → valid
+      submission creates the plot, shows "6.524379, 3.379206 · 1.5 ha" and
+      "Pending — Whisp not configured yet" → "Recheck EUDR status" re-runs
+      cleanly and stays `not_configured`, no crash.
+
+**Update once a real `WHISP_API_KEY` became available**: the live API's
+response shape doesn't match its own docs. `/submit/geojson` can complete
+*synchronously* (`code: "analysis_completed"` in the submit response
+itself, not just the poll response), and the token lives at
+`context.token`, not top-level `token` as the docs implied. The original
+implementation would have misread every successful synchronous check as
+`failed`. Fixed `src/lib/whisp.ts` to check for synchronous completion
+first and read the token from the right place; both endpoints share the
+same `{code, data, context}` envelope. Verified live for real: a point in
+Ondo State (Nigeria's cocoa belt) returned `risk_pcrop: "low"` end-to-end,
+both via direct function call and through the actual UI (immediate check
+on plot creation, and via "Recheck EUDR status" on the existing pending
+plot — which now correctly shows "EUDR status: low" and the recheck button
+disappears once complete). This closes the "known limitation" noted in
+the PR — the complete/success path is now proven against the real API, not
+just designed against its docs.
+
+**Independent sanity check**: the first test point (7.2571, 5.2058) turned
+out to be inside Akure city (Ijapo Estate — hospitals, a post office,
+paved roads per satellite imagery), so its "low" result was a weak
+validation (of course a built-up area has low deforestation risk). Picked
+a second, more meaningful point on a forested hillside near Idanre Hill
+(7.0902, 5.1041): Whisp correctly returned `Ind_01_treecover: "yes"` and
+`risk_pcrop: "more_info_needed"` — a third real category beyond low/
+medium/high, for a point where tree cover is genuinely present and a
+simple low/high risk call needs more context. This is a much stronger
+signal that the integration reflects real land cover, not just a
+default-low response. Note for later: `risk_pcrop` can be
+`more_info_needed`, not only low/medium/high — the UI already handles
+this fine since it just displays whatever Whisp returns, but worth knowing
+when designing any future UI that branches on the risk value specifically.
+
+## Phase 2+
 
 Not started.
