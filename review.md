@@ -26,8 +26,13 @@ Decisions locked in during brainstorming/discovery:
 
 ### Tasks
 
-- [ ] Scaffold Next.js app at repo root
-- [ ] Set up Supabase CLI local dev (init + start + `.env.local`)
+- [x] Scaffold Next.js app at repo root
+- [x] Set up Supabase CLI local dev (init + start + `.env.local`) — ports
+      shifted +10 from defaults (54331/54332/etc.) to avoid colliding with
+      another local Supabase project already running on this machine;
+      analytics/realtime/storage/edge-runtime disabled since Phase 0 doesn't
+      need them and Docker memory is constrained (~3.8GB total, shared with
+      the other project's stack)
 - [ ] Write Section 4 schema migration (farmers, plots, batches, lots,
       lot_batches, buyers, sales — RLS on, no policies yet)
 - [ ] Supabase client helpers (`src/lib/supabase/client.ts`,
