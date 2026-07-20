@@ -138,3 +138,12 @@ Phase 3 (public Home + Transparency), once there's real data to show.
 - Linking a real cloud Supabase project — founder action, whenever ready.
 - Farmer payment funding model decision (plan.md Section 10.2) — needed
   before Phase 2's Payment table is designed, not before Phase 0.
+- **Whisp API polygon requirement** — before building the Phase 1 Whisp
+  integration, confirm whether Whisp requires a real boundary polygon to
+  produce a meaningful risk assessment, or whether a point + radius is
+  sufficient. If a polygon is required, the Phase 0 `center_lat`/
+  `center_lng` columns are a pure placeholder that gets superseded by the
+  boundary column rather than something Whisp can partially use — meaning
+  Phase 1 field data collection (walking each plot's actual boundary, via
+  Open Foris Ground) becomes a required step, not optional. Not a blocker
+  for Phase 0.
