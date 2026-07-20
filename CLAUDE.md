@@ -64,7 +64,15 @@ deliberate future decision, not a default.
 - Tailwind CSS
 - Resend for transactional/contact email
 - Whisp API (FAO Open Foris) for plot-level EUDR deforestation risk —
-  free, no API key cost; call this whenever a new Plot is added
+  free, no API key cost; call this whenever a new Plot is added.
+  **Its live behavior contradicts its own published docs**: `/submit/geojson`
+  can complete synchronously (`code: "analysis_completed"` in the submit
+  response itself, not just after polling), and the job token lives at
+  `context.token`, not a top-level `token` field as the docs imply. Both
+  `/submit/geojson` and `/status/{token}` return the same
+  `{code, data, context}` envelope — see `src/lib/whisp.ts`. Also:
+  `risk_pcrop` isn't only low/medium/high — `more_info_needed` is a real
+  value too (seen on a forested point that needs more context to classify).
 - WhatsApp as the intended farmer-facing intake channel — most farmers
   will not use a web form directly
 
@@ -72,7 +80,15 @@ deliberate future decision, not a default.
 
 Never hardcode or fabricate:
 - "EUDR Ready" status — must come from actual Whisp API output per plot,
-  not placeholder/aspirational text
+  not placeholder/aspirational text. As of Phase 1, this is a **verified
+  live pipeline**, not just a designed one: tested against a real
+  `WHISP_API_KEY` with two independently sanity-checked coordinates (an
+  urban point in Akure returning "low"; a forested hillside near Idanre
+  Hill correctly returning tree-cover detected + "more_info_needed") —
+  satellite imagery was used to confirm the results matched real land
+  cover before trusting the integration. See `review.md` Phase 1 for
+  detail. This matters because any public-facing "EUDR Ready" claim
+  (Phase 3+) traces back to this pipeline.
 - Farmgate vs. buyer price figures — use real founder-sourced data; if real
   numbers aren't available yet, label displayed figures clearly as sample
   data rather than presenting them as live

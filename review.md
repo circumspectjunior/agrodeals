@@ -127,6 +127,21 @@ disappears once complete). This closes the "known limitation" noted in
 the PR — the complete/success path is now proven against the real API, not
 just designed against its docs.
 
+**Independent sanity check**: the first test point (7.2571, 5.2058) turned
+out to be inside Akure city (Ijapo Estate — hospitals, a post office,
+paved roads per satellite imagery), so its "low" result was a weak
+validation (of course a built-up area has low deforestation risk). Picked
+a second, more meaningful point on a forested hillside near Idanre Hill
+(7.0902, 5.1041): Whisp correctly returned `Ind_01_treecover: "yes"` and
+`risk_pcrop: "more_info_needed"` — a third real category beyond low/
+medium/high, for a point where tree cover is genuinely present and a
+simple low/high risk call needs more context. This is a much stronger
+signal that the integration reflects real land cover, not just a
+default-low response. Note for later: `risk_pcrop` can be
+`more_info_needed`, not only low/medium/high — the UI already handles
+this fine since it just displays whatever Whisp returns, but worth knowing
+when designing any future UI that branches on the risk value specifically.
+
 ## Phase 2+
 
 Not started.
