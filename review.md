@@ -8,11 +8,26 @@ and `plan.md` for the business/phase plan).
 
 First real farmer entered via the actual admin UI (not test data): **Patrick
 Ojo**, Okokodo village, +2347036803856. Plot at 6.746396, 5.668334 — real
-Whisp check returned `EUDR status: low`. One real batch: 200 kg, Grade II,
-harvested 2026-07-10, ₦500,000 owed (unpaid as of entry). Throwaway test
-farmers from Phase 2 verification (Farmer Low/NeedsCheck/Ungraded) were
-deleted from the local dev DB at the same time so they don't pollute any
-Phase 3 "live metrics."
+Whisp check returned `EUDR status: low`. One real batch: 200 kg, Grade I
+(corrected from an initial Grade II data-entry error — see below), harvested
+2026-07-10, ₦500,000 owed (unpaid as of entry). Throwaway test farmers from
+Phase 2 verification (Farmer Low/NeedsCheck/Ungraded) were deleted from the
+local dev DB at the same time so they don't pollute any Phase 3 "live
+metrics."
+
+**Correction (2026-07-21)**: grade was entered as Grade II by mistake;
+corrected to Grade I via a direct authenticated update (no "edit batch"
+admin action exists yet — Phase 2 deliberately doesn't have one, since
+amount_owed is meant to be immutable and grade-editing was never a
+designed feature). `amount_owed` was checked and was already correct at
+₦500,000; no `payment_events` existed yet, so there was nothing to correct
+there. While checking this, found `service_role` had never been granted
+access to `farmer_payments`/`payment_events` (same class of gap as the
+earlier `authenticated`-grant fixes for batches/lots/lot_batches — these
+two tables were created in Phase 2, after Phase 0's blanket service_role
+grant on the original 7 tables). Fixed via a new migration, applied with
+`supabase migration up` rather than `db reset` specifically to avoid
+wiping this real data.
 
 Note for Phase 3: the schema has no currency field — `amount_owed` is a
 bare number. ₦500,000 was entered as-is (500000); any public-facing price
