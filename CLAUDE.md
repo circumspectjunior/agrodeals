@@ -94,14 +94,24 @@ Never hardcode or fabricate:
   data rather than presenting them as live
 - Testimonials — only real, permissioned quotes from real farmers
 
-## Payment-gap handling (confirm before building Phase 2 payment fields)
+## Payment-gap handling (decided — personal capital)
 
-Buyers typically pay net-30/60; farmers need payment near harvest. The
-Payment ledger's schema depends on which funding model is in use — e.g.
-"amount owed until buyer pays" vs. "amount advanced personally by founder."
-**Check `plan.md` Section 10 / ask the founder which model applies before
-finalizing the Payment table schema** — this is a business decision that
-changes the data model, not just a UI detail.
+Buyers typically pay net-30/60; farmers need payment near harvest.
+**Decided:** the founder funds farmer payments personally (advances cash
+at/near harvest) and is reimbursed once the buyer eventually pays. This
+means the Farmer Payment ledger tracks amount owed/paid to the farmer as
+its own thing — it is **not** gated on or derived from `Sale.payment_status`.
+Whether the founder has been reimbursed can be read off the related Sale's
+own payment status when needed; it doesn't need its own field on the
+Payment row (single funding source right now — don't add a
+`funding_source` field until a second model, e.g. buyer deposits or a
+cooperative advance, actually comes into play for some other farmer/lot).
+
+Still open for Phase 2's brainstorming (schema-adjacent, not yet decided):
+whether a Farmer Payment row references a `batch_id` or a `lot_id` — a
+farmer is owed money for *their own* batch, before it's aggregated into a
+lot with others, so `batch_id` is the likely answer, but confirm during
+Phase 2 design rather than assuming.
 
 ## Out of scope for now (don't build unless explicitly asked)
 

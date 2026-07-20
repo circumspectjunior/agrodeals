@@ -219,7 +219,10 @@ credible once they're showing real data instead of placeholders.
 
 1. Who is your first buyer conversation target — do you have any specialty
    chocolate maker contacts already, or does that need researching?
-2. How will you fund the farmer-payment gap for your first sale?
+2. ~~How will you fund the farmer-payment gap for your first sale?~~
+   **Decided:** personal capital — the founder advances payment to farmers
+   at/near harvest and is reimbursed once the buyer eventually pays.
+   Farmer payment is fully decoupled from buyer payment timing/status.
 3. Nigerian export path: apply for NEPC registration yourself, or route the
    first shipment(s) through an existing licensed exporter?
 4. Is an EU-side entity (Italy/Malta) worth setting up now, or later once
