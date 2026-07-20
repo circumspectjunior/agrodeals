@@ -315,6 +315,39 @@ change that actually closes the original failure mode; the unit test is a
 real but narrower guard against a *different* future risk (someone
 breaking the arithmetic itself).
 
-## Phase 3+
+## Phase 3 — Public Site: Home + Transparency
+
+Spec: `docs/superpowers/specs/2026-07-21-phase-3-public-home-transparency-design.md`
+
+Decisions locked in during brainstorming:
+- Server-only service-role client for public data-fetching instead of new
+  `anon` RLS policies — Postgres RLS is row-level, not column-level, so a
+  policy meant to expose only counts is one mistake away from also
+  exposing PII. `anon` stays exactly as locked out as always.
+- `src/lib/supabase/service.ts` guarded with the `server-only` package —
+  an accidental client-component import becomes a build error, not a
+  runtime leak.
+- All copy framed explicitly as early-stage ("just getting started"), not
+  a stats panel implying more maturity than the single real farmer
+  currently in the system.
+- Buyer price and testimonial both stated as genuinely not yet available,
+  never invented.
+
+### Tasks
+
+- [x] Server-only service-role client + publicStats.ts. Split into
+      `publicStatsFormat.ts` (pure functions, no I/O) and `publicStats.ts`
+      (I/O layer, `server-only`-guarded) after discovering `server-only`
+      throws unconditionally outside Next.js's build pipeline — including
+      under plain Vitest — so the pure functions couldn't share a file
+      with the guard and still be unit-testable. 13 Vitest tests pass,
+      including the real Patrick Ojo case (`₦500,000 paid for 200kg
+      (Grade I) ≈ ₦2,500/kg`) and zero-farmer/zero-batch states. `npm run
+      build` confirms the `server-only` guard doesn't break the actual
+      Next.js build.
+- [ ] Home page (/)
+- [ ] Transparency page (/transparency)
+
+## Phase 4+
 
 Not started.
