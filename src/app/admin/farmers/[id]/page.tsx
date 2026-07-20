@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Container } from "@/components/Container";
 import { RecheckEudrButton } from "@/components/RecheckEudrButton";
 import { RecordPaymentForm } from "@/components/RecordPaymentForm";
+import { computePaymentStatus, formatPaymentStatus } from "@/lib/payments";
 
 const EUDR_STATUS_COPY: Record<string, string> = {
   not_configured: "Pending — Whisp not configured yet",
@@ -141,15 +142,31 @@ export default async function FarmerDetailPage({
             {batches.map((batch) => {
               const plot = batch.plots;
               const payment = batch.farmer_payments;
-              const events = payment?.payment_events ?? [];
-              const paidTotal = events.reduce((sum, e) => sum + e.amount, 0);
-              const amountOwed = payment?.amount_owed ?? 0;
-              const paymentStatus =
-                paidTotal >= amountOwed
-                  ? "Paid in full"
-                  : paidTotal > 0
-                    ? `Partially paid (${paidTotal} of ${amountOwed})`
-                    : `Unpaid (${amountOwed} owed)`;
+
+              // createBatch always inserts a farmer_payments row atomically
+              // with the batch — payment should never be missing. Treat a
+              // missing row as a loud data-integrity warning, not a silent
+              // "0 owed" default: that exact silent default once produced a
+              // false-positive "Paid in full" on an unpaid batch (see
+              // review.md Phase 2).
+              if (!payment) {
+                return (
+                  <li key={batch.id} className="py-3">
+                    <p className="text-sm">
+                      {batch.weight} kg · {batch.grade} · {batch.harvest_date}
+                    </p>
+                    <p className="mt-1 text-sm text-red-600">
+                      No payment record found for this batch — data
+                      integrity issue, needs manual investigation.
+                    </p>
+                  </li>
+                );
+              }
+
+              const events = payment.payment_events;
+              const status = computePaymentStatus(events, payment.amount_owed);
+              const paymentStatus = formatPaymentStatus(status);
+              const isFullyPaid = status.kind === "paid_in_full";
 
               return (
                 <li key={batch.id} className="py-3">
@@ -176,7 +193,7 @@ export default async function FarmerDetailPage({
                       ))}
                     </ul>
                   )}
-                  {payment && paidTotal < amountOwed && (
+                  {!isFullyPaid && (
                     <RecordPaymentForm farmerPaymentId={payment.id} />
                   )}
                 </li>

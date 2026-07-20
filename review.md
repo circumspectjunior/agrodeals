@@ -229,6 +229,63 @@ Decisions locked in during brainstorming:
 
 Phase 2 complete. All 5 tasks done and verified.
 
+### Post-review follow-up: scrutinizing the payment-ledger bug before merge
+
+Before approving the PR, the founder pushed back on the bug list rather
+than accepting the summary at face value — specifically on the
+false-positive "Paid in full" bug, since this table is the one place in
+the system where a wrong-but-plausible number is worse than an obvious
+error. Answering that scrutiny honestly, with verification, rather than
+just restating the original summary:
+
+- **How it was caught**: deliberate manual Playwright verification of the
+  first-use case (log a batch, check its status immediately), not an
+  automated test — this project has none. It was always going to surface
+  on the very first manual pass, which is reassuring for *that* instance
+  but doesn't mean the same class of bug couldn't hide somewhere less
+  obvious.
+- **Checked for the same pattern elsewhere**: grepped and manually
+  reviewed all 5 embedded-relation query sites in the codebase. The other
+  4 either are genuine one-to-many relations correctly treated as arrays
+  (`payment_events` from `farmer_payments`) or were written after this bug
+  and already match the real runtime shape. No other silent instance
+  found — but this was a static check, not a regression test; nothing
+  stops a future 6th site from repeating the mistake.
+- **The "batch belongs to at most one lot" constraint**: confirmed via
+  `git log` that the unique constraint (commit 9e1eb9b) landed *before*
+  `createLot` was ever written or run (commit f0ab7ef) — no batch was ever
+  double-assigned, even transiently, during testing. Also confirmed live
+  that it's a real Postgres constraint, not an app-layer check: a direct
+  `lot_batches` insert attempting to reuse an already-assigned `batch_id`
+  (bypassing the app entirely) was rejected with `23505 duplicate key
+  value violates unique constraint "lot_batches_batch_id_unique"`.
+
+**Regression test added, with an honest caveat about what it does and
+doesn't cover**: extracted the payment-status computation into a pure
+function (`src/lib/payments.ts`, `computePaymentStatus`/
+`formatPaymentStatus`) and added the project's first automated tests
+(`npm test`, via Vitest — reverses the Phase 0 "manual verification only"
+decision specifically for this one trust-critical piece). The test
+reproduces the exact input that should never look "paid": zero events
+against a real owed amount must compute as `unpaid`, never
+`paid_in_full`.
+
+Important limitation, stated plainly rather than oversold: this unit test
+does **not** actually guard against the original root cause. The original
+bug was never in the arithmetic (`paidTotal >= amountOwed` was always
+correct) — it was that `payment` itself silently became `undefined` from
+the Supabase relation-typing mistake, so `amount_owed ?? 0` masked a
+missing record as a real zero. A pure-function test can't catch a wrong
+*extraction* of its own inputs. The actual fix for that failure mode is a
+defensive code change in `src/app/admin/farmers/[id]/page.tsx`: since
+every batch is guaranteed exactly one `farmer_payments` row (inserted
+atomically in `createBatch`), a missing `payment` now renders a loud
+"No payment record found for this batch — data integrity issue" warning
+instead of silently defaulting to a plausible-looking 0/0. That's the
+change that actually closes the original failure mode; the unit test is a
+real but narrower guard against a *different* future risk (someone
+breaking the arithmetic itself).
+
 ## Phase 3+
 
 Not started.
