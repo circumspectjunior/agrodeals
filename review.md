@@ -212,7 +212,22 @@ Decisions locked in during brainstorming:
       (shown as "needs attention") and `price_offered: 500`. Confirmed the
       already-assigned batches no longer appear as selectable in a new
       lot's form.
-- [ ] Lot detail: price_offered edit + delete
+- [x] Lot detail: price_offered edit + delete (`/admin/lots/[id]`,
+      `updatePriceOffered`, `deleteLot`). Lists exactly which constituent
+      plots need attention when `eudr_status_rollup` is null (e.g.
+      "Farmer NeedsCheck's batch (2026-07-12): plot is more_info_needed").
+      Verified via Playwright + direct DB checks: updating price_offered
+      (500 → 750) changed only that column — `total_weight`,
+      `blended_grade`, and `eudr_status_rollup` stayed untouched; deleting
+      a lot removed it from the list and released its batch back into the
+      unassigned pool (selectable again on `/admin/lots/new`). Deleting a
+      lot with a Sale attached remains unverified this phase — no
+      Sale-creation UI exists yet (Phase 4); the FK protection exists in
+      the schema but only a manual DB-level insert could exercise the
+      rejection path right now, same shape as the Phase 1 Whisp
+      complete/failed gap.
+
+Phase 2 complete. All 5 tasks done and verified.
 
 ## Phase 3+
 
