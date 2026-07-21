@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* AgroDeal is a single, deliberately light warm brand — the espresso
+   surfaces are intentional, not a dark theme. Make `dark:` class-based
+   (never auto-activated by the OS) so leftover dark: utilities on the
+   internal admin pages stay inert instead of clashing on a dark-mode
+   device. We never add a `.dark` class, so `dark:` is effectively off. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
   AgroDeal visual system. Palette derives from cocoa's color journey
   (pod-green -> husk -> fermented bean -> dried gold). The identity runs on
