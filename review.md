@@ -535,7 +535,18 @@ Decisions locked in during brainstorming:
       with current content — fair-price came out better than the feared
       "mostly empty" case. Founder flips the 3 held claims to verified
       once real figures exist.
-- [ ] Public /learn page + nav link
+- [x] Public /learn page ("For farmers", static, mobile-first) + Nav
+      link. Verified via Playwright + raw-HTML grep: all 5 post-harvest +
+      4 universal fair-price pieces render; the 3 `[FOUNDER TO CONFIRM]`
+      specific claims are **absent from the served HTML entirely** (grepped
+      "FOUNDER TO CONFIRM" and each held claim's text — none present),
+      proving withholding not labeling. Also exercised the empty-module
+      path for real by temporarily adding an all-unverified throwaway
+      module: it rendered "This section is being reviewed — check back
+      soon", then reverted cleanly (empty git diff). Built static (`○`),
+      no force-dynamic.
+
+Phase 5 complete. All 3 tasks done and verified.
 
 ## Phase 6+
 
