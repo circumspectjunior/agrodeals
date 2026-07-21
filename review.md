@@ -33,6 +33,21 @@ Note for Phase 3: the schema has no currency field — `amount_owed` is a
 bare number. ₦500,000 was entered as-is (500000); any public-facing price
 display needs to decide how to label currency unambiguously.
 
+**First real lot (2026-07-21)**: ahead of Phase 4 (buyer lot catalog),
+created a real lot from Patrick Ojo's batch via the actual `/admin/lots/new`
+UI — 200 kg, Grade I, `eudr_status_rollup: "low"`, no `price_offered` set
+(no real buyer price exists yet). While checking the lots list, found two
+**orphaned test lots** still present from Phase 2 verification ("70 kg
+Ungraded", "1 kg Grade I") — leftover because deleting a farmer cascades
+to their batches and `lot_batches` rows, but **not** to a `lots` row that
+becomes empty as a side effect (lots have no direct FK to farmer/batch;
+they're only referenced *by* `lot_batches`). This can only happen via
+direct DB manipulation bypassing the app (there's no "delete farmer"
+admin action), which is exactly how it happened — when the Phase 2 test
+farmers were deleted directly via the API ahead of Phase 3. Deleted both
+orphaned lots directly; confirmed the lots list now shows only the one
+real lot.
+
 ## Phase 0 — Foundation
 
 Spec: `docs/superpowers/specs/2026-07-20-phase-0-foundation-design.md`
@@ -315,6 +330,81 @@ change that actually closes the original failure mode; the unit test is a
 real but narrower guard against a *different* future risk (someone
 breaking the arithmetic itself).
 
-## Phase 3+
+## Phase 3 — Public Site: Home + Transparency
+
+Spec: `docs/superpowers/specs/2026-07-21-phase-3-public-home-transparency-design.md`
+
+Decisions locked in during brainstorming:
+- Server-only service-role client for public data-fetching instead of new
+  `anon` RLS policies — Postgres RLS is row-level, not column-level, so a
+  policy meant to expose only counts is one mistake away from also
+  exposing PII. `anon` stays exactly as locked out as always.
+- `src/lib/supabase/service.ts` guarded with the `server-only` package —
+  an accidental client-component import becomes a build error, not a
+  runtime leak.
+- All copy framed explicitly as early-stage ("just getting started"), not
+  a stats panel implying more maturity than the single real farmer
+  currently in the system.
+- Buyer price and testimonial both stated as genuinely not yet available,
+  never invented.
+
+### Tasks
+
+- [x] Server-only service-role client + publicStats.ts. Split into
+      `publicStatsFormat.ts` (pure functions, no I/O) and `publicStats.ts`
+      (I/O layer, `server-only`-guarded) after discovering `server-only`
+      throws unconditionally outside Next.js's build pipeline — including
+      under plain Vitest — so the pure functions couldn't share a file
+      with the guard and still be unit-testable. 13 Vitest tests pass,
+      including the real Patrick Ojo case (`₦500,000 paid for 200kg
+      (Grade I) ≈ ₦2,500/kg`) and zero-farmer/zero-batch states. `npm run
+      build` confirms the `server-only` guard doesn't break the actual
+      Next.js build.
+- [x] Home page (/) — mission/process copy adapted from plan.md's Vision
+      section, live metrics via `formatHomeStats`. Along the way found the
+      page was being **statically prerendered at build time** (unlike the
+      admin pages, the service-role client doesn't use cookies, so it
+      doesn't automatically opt into per-request rendering) — would have
+      frozen "live" metrics until the next deploy. Fixed with
+      `export const dynamic = "force-dynamic"`. Verified via Playwright
+      against the real dev DB: shows "We're just getting started — 1
+      farmer, 1 plot mapped, 200kg traced so far" and "100%
+      EUDR-verified", matching Patrick Ojo's real data exactly.
+- [x] Transparency page (/transparency), plus a Nav link so it's
+      discoverable. Verified via Playwright against the real dev DB: real
+      farmgate price ("₦500,000 paid for 200kg (Grade I) ≈ ₦2,500/kg"),
+      honest "Not yet disclosed" buyer price, real EUDR readiness ("1 of 1
+      verified plot so far is low deforestation risk"), no testimonial
+      section. Same `force-dynamic` fix applied as Home, for the same
+      reason.
+
+Phase 3 complete. All 3 tasks done and verified against real data.
+
+### Post-review follow-up: production-build verification + copy polish
+
+Before merging, the founder asked for three things beyond the design-level
+summary:
+
+- **Confirmed `force-dynamic` on both routes** (grep, not just memory).
+- **Proved the dynamic rendering actually works in production**, not just
+  in dev (where everything re-renders regardless): ran `npm run build` +
+  `next start`, added a temporary batch directly (50kg, Grade III,
+  earlier harvest date than Patrick's real batch — so it became the new
+  "earliest batch" shown), refreshed `/transparency` and `/` with no
+  rebuild/restart, and confirmed both pages picked up the new numbers
+  immediately (₦100,000/50kg on Transparency, 250kg traced on Home).
+  Deleted the temporary batch afterward and confirmed both pages reverted
+  to exactly the original real-data state (₦500,000/200kg).
+- **Read `/transparency` cold, as a stranger would** (screenshot of the
+  live production build, not just trusting the design description). Found
+  one honest gap: the EUDR readiness section said "we're just getting
+  started" but the farmgate price line was a bare number a fast skimmer
+  could misread as an aggregate/average rather than the one real
+  transaction it is. Fixed: `formatFarmgatePrice` now leads with the same
+  "We're just getting started — here's our first real transaction:"
+  framing as `formatEudrReadiness`, so every section signals early-stage
+  explicitly rather than relying on the intro paragraph alone.
+
+## Phase 4+
 
 Not started.
