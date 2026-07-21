@@ -9,6 +9,9 @@ export function Nav() {
           <Link href="/" className="font-semibold tracking-tight">
             AgroDeal
           </Link>
+          <Link href="/lots" className="text-sm font-medium">
+            Available lots
+          </Link>
           <Link href="/transparency" className="text-sm font-medium">
             Transparency
           </Link>

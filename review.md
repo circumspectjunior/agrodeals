@@ -444,7 +444,18 @@ Decisions locked in during brainstorming:
       tests (26 total), all against injected data: available-lots filter
       (excludes lots with a sale), email validator (accepts plausible,
       rejects malformed incl. whitespace-trim), EUDR pending fallback.
-- [ ] Public /lots catalog + /lots/[id] detail + inquiry form
+- [x] Public /lots catalog + /lots/[id] detail + inquiry form +
+      submitInquiry Server Action + drop-in Resend (`src/lib/resend.ts`,
+      fail-open like Whisp) + Nav link. Both routes `force-dynamic` (Phase
+      3 reasoning). Verified via Playwright against Patrick's real lot:
+      `/lots` shows "We're just getting started — here's our first
+      available lot", 200kg/Grade I/EUDR low, no price; `/lots/[id]` shows
+      the same + inquiry form; an invalid email (`jane@nodomain`, which
+      passes HTML5 type=email but not a real check) was correctly rejected
+      server-side, proving the server validation does real work; a valid
+      inquiry saved to the DB (verified: correct fields, `viewed_at` null,
+      right lot_id) and Resend failed open ("skipping inquiry email —
+      inquiry was still saved" logged, never thrown).
 - [ ] Admin inquiry visibility
 
 ## Phase 5+
