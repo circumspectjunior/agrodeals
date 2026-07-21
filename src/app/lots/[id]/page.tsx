@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Container } from "@/components/Container";
-import { getPublicLot, formatEudrStatusForBuyer } from "@/lib/lotCatalog";
+import { PageHeader } from "@/components/PageHeader";
+import { getPublicLot } from "@/lib/lotCatalog";
 import { InquiryForm } from "./InquiryForm";
 
 export const dynamic = "force-dynamic";
@@ -17,23 +18,40 @@ export default async function PublicLotPage({
     notFound();
   }
 
-  return (
-    <Container>
-      <div className="py-16">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {lot.total_weight} kg · {lot.blended_grade}
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          EUDR status: {formatEudrStatusForBuyer(lot.eudr_status_rollup)}
-        </p>
-        <p className="mt-4 max-w-2xl text-zinc-600 dark:text-zinc-400">
-          Interested in this lot? Send us an inquiry below and we'll share
-          pricing and next steps directly.
-        </p>
+  const isLow = lot.eudr_status_rollup === "low";
 
-        <h2 className="mt-8 font-medium">Inquire about this lot</h2>
-        <InquiryForm lotId={lot.id} />
-      </div>
-    </Container>
+  return (
+    <>
+      <PageHeader
+        eyebrow="Available lot"
+        title={`${lot.total_weight} kg · ${lot.blended_grade}`}
+        subtitle="Send us an inquiry and we'll share pricing and next steps directly."
+      >
+        <div className="mt-8 flex items-center gap-3">
+          <span className="eyebrow text-husk/55">EUDR status</span>
+          <span
+            className={`font-mono text-sm font-bold uppercase tracking-wider ${
+              isLow ? "text-leaf-bright" : "text-amber"
+            }`}
+          >
+            {isLow
+              ? "Low risk"
+              : lot.eudr_status_rollup === null
+                ? "Check pending"
+                : lot.eudr_status_rollup}
+          </span>
+        </div>
+      </PageHeader>
+
+      <Container>
+        <div className="max-w-xl py-16 sm:py-20">
+          <p className="eyebrow text-terracotta-deep">Inquire</p>
+          <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-roasted">
+            Ask about this lot
+          </h2>
+          <InquiryForm lotId={lot.id} />
+        </div>
+      </Container>
+    </>
   );
 }

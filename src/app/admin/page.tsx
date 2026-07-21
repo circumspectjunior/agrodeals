@@ -25,26 +25,32 @@ export default async function AdminPage() {
   return (
     <Container>
       <div className="py-16">
-        <h1 className="text-xl font-semibold tracking-tight">Admin</h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Signed in as {user.email}.
-        </p>
+        <h1 className="font-display text-3xl font-semibold tracking-tight text-roasted">
+          Admin
+        </h1>
+        <p className="mt-2 text-sm text-ink/60">Signed in as {user.email}.</p>
 
         {newInquiryCount > 0 && (
           <Link
             href="/admin/lots"
-            className="mt-6 block rounded border border-zinc-900 px-4 py-3 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-50 dark:hover:bg-zinc-900"
+            className="mt-6 block rounded-md border border-terracotta-deep/40 bg-terracotta-deep/5 px-4 py-3 text-sm font-semibold text-terracotta-deep transition-colors hover:bg-terracotta-deep/10"
           >
             {newInquiryCount} new buyer{" "}
             {newInquiryCount === 1 ? "inquiry" : "inquiries"} — review in Lots →
           </Link>
         )}
 
-        <nav className="mt-8 flex flex-col gap-2 text-sm">
-          <Link href="/admin/farmers" className="font-medium underline">
+        <nav className="mt-8 flex flex-col gap-2 text-sm font-medium">
+          <Link
+            href="/admin/farmers"
+            className="text-ink/80 underline decoration-ink/25 underline-offset-4 hover:text-terracotta-deep"
+          >
             Farmers
           </Link>
-          <Link href="/admin/lots" className="font-medium underline">
+          <Link
+            href="/admin/lots"
+            className="text-ink/80 underline decoration-ink/25 underline-offset-4 hover:text-terracotta-deep"
+          >
             Lots
           </Link>
         </nav>

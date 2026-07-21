@@ -1,22 +1,43 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Hanken_Grotesk, Space_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Display — warm, high-character old-style serif (headings/hero). This is
+// the LCP element on most pages, so it's explicitly preloaded and gets
+// first claim on early bandwidth.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Body — friendly humanist sans, highly legible on low-end phones. Used
+// everywhere, so it's preloaded too.
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
+});
+
+// Manifest — the factual voice (eyebrow labels + data values). Secondary
+// to the display/body faces, so it's not preloaded — that leaves early
+// bandwidth for the LCP display font. It swaps in a moment later without
+// shifting layout.
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
   title: "AgroDeal",
-  description: "Direct-trade cocoa, aggregated from smallholder farmers.",
+  description: "Direct-trade cocoa, traceable to the farm.",
 };
 
 export default function RootLayout({
@@ -27,9 +48,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${hanken.variable} ${spaceMono.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col">
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />

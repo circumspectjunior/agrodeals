@@ -548,6 +548,37 @@ Decisions locked in during brainstorming:
 
 Phase 5 complete. All 3 tasks done and verified.
 
+## Visual design pass (pre-Phase 6)
+
+A real visual identity, requested before the Phase 6 code-polish work.
+Spec-less (design brief in-conversation), built via the frontend-design
+skill with a plan approved before broad rollout.
+
+- **Identity**: warm cocoa-derived palette (espresso/husk/terracotta/leaf/
+  amber) on a two-register system — warm editorial (Fraunces + Hanken
+  Grotesk) plus a precise "manifest" voice (Space Mono) for every real
+  data value. The manifest voice is the signature: it makes the honest
+  content look like a certificate, not a pitch.
+- **Contrast (founder gate 1)**: every text/surface pairing WCAG-AA
+  verified with real math *before* building — which forced palette
+  corrections (green split into cream #52603A / espresso #9CAD63 variants;
+  terracotta split into display #BC5A34 / small-text #A8461F; amber locked
+  to dark surfaces). Usage rules written into globals.css.
+- **Green = verified only (founder gate 2)**: green appears solely on
+  EUDR verified/low-risk status across every page — never decorative.
+- **Performance (founder gate 3)**: real Lighthouse mobile + byte
+  measurement on the Home reference. After adding the display-font preload
+  (and deprioritizing Space Mono): **mobile Performance 96, LCP 2.7s
+  (down from 3.3s), CLS 0, TBT 50ms, ~258KB cold-load** (fonts/JS cache
+  after first visit).
+- Rolled across all public pages (Home, Transparency, /lots, /lots/[id] +
+  inquiry form, /learn) + a light admin tidy (`dark:` made class-based so
+  leftover admin dark: utilities stay inert; display headings + warm
+  inputs on login/dashboard). All honest content preserved verbatim; the
+  33 unit tests still pass. Verified desktop + 375px mobile on every page.
+
 ## Phase 6+
 
-Not started.
+Not started (the SEO/analytics/proxy/runbook code-polish spec at
+`docs/superpowers/specs/2026-07-21-phase-6-polish-launch-design.md` is
+still pending — this design pass came first at the founder's request).

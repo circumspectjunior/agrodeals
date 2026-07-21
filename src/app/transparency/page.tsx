@@ -1,4 +1,6 @@
 import { Container } from "@/components/Container";
+import { PageHeader } from "@/components/PageHeader";
+import { Panel, EudrTag } from "@/components/Panel";
 import {
   getTransparencySnapshot,
   formatFarmgatePrice,
@@ -12,41 +14,43 @@ export const dynamic = "force-dynamic";
 
 export default async function TransparencyPage() {
   const snapshot = await getTransparencySnapshot();
+  const allLow =
+    snapshot.totalPlotCount > 0 &&
+    snapshot.lowRiskPlotCount === snapshot.verifiedPlotCount &&
+    snapshot.verifiedPlotCount === snapshot.totalPlotCount;
 
   return (
-    <Container>
-      <div className="py-16">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Transparency
-        </h1>
-        <p className="mt-4 max-w-2xl text-zinc-600 dark:text-zinc-400">
-          The margin between what we pay farmers and what buyers pay us is
-          the whole point of this business, not something we hide. Here's
-          what we can show you right now, honestly — including the parts
-          we don't have yet.
-        </p>
+    <>
+      <PageHeader
+        eyebrow="Our margin, disclosed"
+        title="The numbers we'd rather show than hide."
+        subtitle="The gap between what we pay farmers and what buyers pay us is the whole point of this business. Here's what we can show you right now — honestly, including the parts we don't have yet."
+      />
 
-        <div className="mt-8">
-          <h2 className="font-medium">Farmgate price</h2>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            {formatFarmgatePrice(snapshot.farmgateBatch)}
-          </p>
-        </div>
+      <Container>
+        <div className="grid gap-5 py-16 sm:grid-cols-2 sm:py-20">
+          <Panel label="Farmgate price">
+            <p className="text-lg leading-relaxed text-ink/85">
+              {formatFarmgatePrice(snapshot.farmgateBatch)}
+            </p>
+          </Panel>
 
-        <div className="mt-8">
-          <h2 className="font-medium">Buyer price</h2>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Not yet disclosed — check back as we complete our first sale.
-          </p>
-        </div>
+          <Panel label="Buyer price">
+            <p className="text-lg leading-relaxed text-ink/85">
+              Not yet disclosed — check back as we complete our first sale.
+            </p>
+          </Panel>
 
-        <div className="mt-8">
-          <h2 className="font-medium">EUDR readiness</h2>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            {formatEudrReadiness(snapshot)}
-          </p>
+          <Panel label="EUDR readiness">
+            <div className="flex flex-col gap-3">
+              <EudrTag status={allLow ? "low" : null} />
+              <p className="leading-relaxed text-ink/70">
+                {formatEudrReadiness(snapshot)}
+              </p>
+            </div>
+          </Panel>
         </div>
-      </div>
-    </Container>
+      </Container>
+    </>
   );
 }
