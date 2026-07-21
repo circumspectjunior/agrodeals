@@ -1,4 +1,5 @@
 import { Container } from "@/components/Container";
+import { PageHeader } from "@/components/PageHeader";
 import { modulesByLanguage } from "@/lib/education/content";
 import { publicContentFor } from "@/lib/education/format";
 
@@ -6,8 +7,15 @@ import { publicContentFor } from "@/lib/education/format";
 // statically rendered — it only changes on deploy. No force-dynamic.
 
 export const metadata = {
-  title: "Learn — AgroDeal",
+  title: "For farmers — AgroDeal",
   description: "Practical guidance for cocoa farmers on quality and fair pricing.",
+};
+
+// Topical eyebrow per module — encodes the real subject, not a fake
+// sequence number (the modules are independent topics, not ordered steps).
+const MODULE_EYEBROW: Record<string, string> = {
+  "post-harvest-quality": "Quality",
+  "fair-price-basics": "Pricing",
 };
 
 export default function LearnPage() {
@@ -18,48 +26,59 @@ export default function LearnPage() {
   const modules = modulesByLanguage.en ?? [];
 
   return (
-    <Container>
-      <div className="py-16">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          For farmers
-        </h1>
-        <p className="mt-4 max-w-2xl text-zinc-600 dark:text-zinc-400">
-          Practical guidance on getting the most value from your cocoa —
-          written to be genuinely useful, not generic.
-        </p>
+    <>
+      <PageHeader
+        eyebrow="For farmers"
+        title="Getting the most from your cocoa."
+        subtitle="Practical guidance on quality and fair pricing — written to be genuinely useful, not generic."
+      />
 
-        {modules.map((module) => {
-          const pieces = publicContentFor(module);
+      <Container>
+        <div className="py-16 sm:py-20">
+          {modules.map((module, i) => {
+            const pieces = publicContentFor(module);
 
-          return (
-            <section key={module.id} className="mt-12">
-              <h2 className="text-xl font-semibold tracking-tight">
-                {module.title}
-              </h2>
-              <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
-                {module.intro}
-              </p>
-
-              {pieces.length === 0 ? (
-                <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-500">
-                  This section is being reviewed — check back soon.
+            return (
+              <section
+                key={module.id}
+                className={
+                  i > 0 ? "mt-14 border-t border-ink/10 pt-14" : undefined
+                }
+              >
+                <p className="eyebrow text-terracotta-deep">
+                  {MODULE_EYEBROW[module.id] ?? "Guide"}
                 </p>
-              ) : (
-                <ul className="mt-4 flex flex-col gap-4">
-                  {pieces.map((piece) => (
-                    <li
-                      key={piece.id}
-                      className="max-w-2xl text-zinc-700 dark:text-zinc-300"
-                    >
-                      {piece.text}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          );
-        })}
-      </div>
-    </Container>
+                <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-roasted">
+                  {module.title}
+                </h2>
+                <p className="mt-3 max-w-2xl text-lg leading-relaxed text-ink/70">
+                  {module.intro}
+                </p>
+
+                {pieces.length === 0 ? (
+                  <p className="mt-6 text-ink/55">
+                    This section is being reviewed — check back soon.
+                  </p>
+                ) : (
+                  <ul className="mt-8 flex flex-col gap-6">
+                    {pieces.map((piece) => (
+                      <li key={piece.id} className="flex max-w-2xl gap-4">
+                        <span
+                          aria-hidden
+                          className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta"
+                        />
+                        <p className="text-lg leading-relaxed text-ink/85">
+                          {piece.text}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            );
+          })}
+        </div>
+      </Container>
+    </>
   );
 }
