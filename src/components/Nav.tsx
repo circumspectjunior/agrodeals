@@ -15,6 +15,9 @@ export function Nav() {
           <Link href="/transparency" className="text-sm font-medium">
             Transparency
           </Link>
+          <Link href="/learn" className="text-sm font-medium">
+            For farmers
+          </Link>
         </nav>
       </Container>
     </header>

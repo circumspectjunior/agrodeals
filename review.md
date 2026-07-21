@@ -500,6 +500,54 @@ content is co-located on the page that marks it viewed, and the `/admin`
 total-count callout gives a persistent signal until every lot's inquiries
 are actually opened).
 
-## Phase 5+
+## Phase 5 — Farmer Education Page
+
+Spec: `docs/superpowers/specs/2026-07-21-phase-5-farmer-education-design.md`
+
+Decisions locked in during brainstorming:
+- Two modules (post-harvest quality, fair price basics); English
+  authoritative; i18n-ready but NO machine translation ever rendered.
+- Each content piece tagged `universal` vs `agrodeal_specific(+verified)`;
+  unverified specific claims WITHHELD from the page entirely, not labeled
+  — same discipline as unverified EUDR/prices/testimonials, because the
+  audience may not weigh a disclaimer carefully.
+- Empty-module honest "being reviewed" state + a publish-readiness report
+  (verified-vs-held-back ratio per module) so fair-price-basics (mostly
+  agrodeal_specific) doesn't ship mostly empty by surprise.
+- Static in-repo content (no DB, no force-dynamic).
+
+### Tasks
+
+- [x] Content types (`types.ts`) + pure filter (`format.ts`:
+      `isPubliclyShown`, `publicContentFor`, `publishableCount`) + 7 Vitest
+      tests (33 total) against injected data: universal always shown,
+      verified specifics shown, unverified specifics withheld (not
+      labeled), publishableCount `{shown, heldBack}` incl. the all-held-back
+      empty-module case.
+- [x] Drafted both modules (`content.ts`), i18n-ready
+      (`modulesByLanguage` keyed by language, `en` only). **Publish-
+      readiness report**: Post-harvest quality 5 of 5 shown (0 held — all
+      universal agronomy, fully publishable); Fair price basics 4 of 7
+      shown, 3 held for founder review (the AgroDeal-specific farmgate
+      price / grading process / payment terms, drafted as explicit
+      `[FOUNDER TO CONFIRM]` placeholders with `verified: false`). Neither
+      module is empty, so the "being reviewed" empty-state doesn't trigger
+      with current content — fair-price came out better than the feared
+      "mostly empty" case. Founder flips the 3 held claims to verified
+      once real figures exist.
+- [x] Public /learn page ("For farmers", static, mobile-first) + Nav
+      link. Verified via Playwright + raw-HTML grep: all 5 post-harvest +
+      4 universal fair-price pieces render; the 3 `[FOUNDER TO CONFIRM]`
+      specific claims are **absent from the served HTML entirely** (grepped
+      "FOUNDER TO CONFIRM" and each held claim's text — none present),
+      proving withholding not labeling. Also exercised the empty-module
+      path for real by temporarily adding an all-unverified throwaway
+      module: it rendered "This section is being reviewed — check back
+      soon", then reverted cleanly (empty git diff). Built static (`○`),
+      no force-dynamic.
+
+Phase 5 complete. All 3 tasks done and verified.
+
+## Phase 6+
 
 Not started.
