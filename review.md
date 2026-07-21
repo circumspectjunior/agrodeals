@@ -33,6 +33,21 @@ Note for Phase 3: the schema has no currency field — `amount_owed` is a
 bare number. ₦500,000 was entered as-is (500000); any public-facing price
 display needs to decide how to label currency unambiguously.
 
+**First real lot (2026-07-21)**: ahead of Phase 4 (buyer lot catalog),
+created a real lot from Patrick Ojo's batch via the actual `/admin/lots/new`
+UI — 200 kg, Grade I, `eudr_status_rollup: "low"`, no `price_offered` set
+(no real buyer price exists yet). While checking the lots list, found two
+**orphaned test lots** still present from Phase 2 verification ("70 kg
+Ungraded", "1 kg Grade I") — leftover because deleting a farmer cascades
+to their batches and `lot_batches` rows, but **not** to a `lots` row that
+becomes empty as a side effect (lots have no direct FK to farmer/batch;
+they're only referenced *by* `lot_batches`). This can only happen via
+direct DB manipulation bypassing the app (there's no "delete farmer"
+admin action), which is exactly how it happened — when the Phase 2 test
+farmers were deleted directly via the API ahead of Phase 3. Deleted both
+orphaned lots directly; confirmed the lots list now shows only the one
+real lot.
+
 ## Phase 0 — Foundation
 
 Spec: `docs/superpowers/specs/2026-07-20-phase-0-foundation-design.md`
