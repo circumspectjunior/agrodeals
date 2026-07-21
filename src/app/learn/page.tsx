@@ -1,5 +1,6 @@
 import { Container } from "@/components/Container";
 import { PageHeader } from "@/components/PageHeader";
+import { Section } from "@/components/Section";
 import { modulesByLanguage } from "@/lib/education/content";
 import { publicContentFor } from "@/lib/education/format";
 
@@ -39,19 +40,13 @@ export default function LearnPage() {
             const pieces = publicContentFor(module);
 
             return (
-              <section
+              <Section
                 key={module.id}
-                className={
-                  i > 0 ? "mt-14 border-t border-ink/10 pt-14" : undefined
-                }
+                eyebrow={MODULE_EYEBROW[module.id] ?? "Guide"}
+                title={module.title}
+                className={i > 0 ? "mt-14 border-t border-ink/10 pt-14" : ""}
               >
-                <p className="eyebrow text-terracotta-deep">
-                  {MODULE_EYEBROW[module.id] ?? "Guide"}
-                </p>
-                <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-roasted">
-                  {module.title}
-                </h2>
-                <p className="mt-3 max-w-2xl text-lg leading-relaxed text-ink/70">
+                <p className="max-w-2xl text-lg leading-relaxed text-ink/70">
                   {module.intro}
                 </p>
 
@@ -60,9 +55,9 @@ export default function LearnPage() {
                     This section is being reviewed — check back soon.
                   </p>
                 ) : (
-                  <ul className="mt-8 flex flex-col gap-6">
+                  <ul className="mt-6 flex flex-col gap-6">
                     {pieces.map((piece) => (
-                      <li key={piece.id} className="flex max-w-2xl gap-4">
+                      <li key={piece.id} className="flex gap-4">
                         <span
                           aria-hidden
                           className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta"
@@ -74,7 +69,7 @@ export default function LearnPage() {
                     ))}
                   </ul>
                 )}
-              </section>
+              </Section>
             );
           })}
         </div>

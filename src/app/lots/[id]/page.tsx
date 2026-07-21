@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Container } from "@/components/Container";
 import { PageHeader } from "@/components/PageHeader";
+import { Section } from "@/components/Section";
 import { getPublicLot } from "@/lib/lotCatalog";
 import { InquiryForm } from "./InquiryForm";
 
@@ -44,13 +45,13 @@ export default async function PublicLotPage({
       </PageHeader>
 
       <Container>
-        <div className="max-w-xl py-16 sm:py-20">
-          <p className="eyebrow text-terracotta-deep">Inquire</p>
-          <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-roasted">
-            Ask about this lot
-          </h2>
+        <Section
+          eyebrow="Inquire"
+          title="Ask about this lot"
+          className="py-16 sm:py-20"
+        >
           <InquiryForm lotId={lot.id} />
-        </div>
+        </Section>
       </Container>
     </>
   );
