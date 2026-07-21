@@ -405,6 +405,42 @@ summary:
   framing as `formatEudrReadiness`, so every section signals early-stage
   explicitly rather than relying on the intro paragraph alone.
 
-## Phase 4+
+## Phase 4 — Buyer-Facing Lot Catalog
+
+Spec: `docs/superpowers/specs/2026-07-21-phase-4-buyer-lot-catalog-design.md`
+
+Decisions locked in during brainstorming:
+- Public catalog (volume/grade/EUDR status, no price); pricing/contact
+  gated behind a real inquiry.
+- Inquiry writes go through a `submitInquiry` Server Action + service-role
+  client, NOT an `anon` INSERT policy — so unauthenticated input can never
+  reach Postgres without passing the Server Action's validation first, and
+  `anon` never gets a database foothold even for writes.
+- `lot_inquiries` uses `on delete restrict` matching `sales -> lots`:
+  protects real lead data from accidental deletion, without treating an
+  inquiry as Sale-level consequential.
+- Inquiry != Sale, and Buyer-record creation both stay separate deliberate
+  admin actions.
+- Availability filter (lots with no `sales` row) built correct now, not a
+  deferred TODO.
+- `viewed_at` + an unread count on `/admin/lots` so new leads are visible
+  without Resend configured.
+- Email validated server-side (plausible shape) — a malformed email in a
+  "real lead" row is a lead you can never respond to.
+
+### Tasks
+
+- [x] `lot_inquiries` migration + `authenticated` select/update RLS.
+      Applied via `supabase migration up` (not `db reset`) to preserve
+      Patrick's real data. Verified: service-role can insert (the write
+      path); `on delete restrict` blocks deleting a lot with an inquiry
+      attached (FK error 23503); `anon` fully denied for BOTH select and
+      insert; `authenticated` can select but cannot insert (only
+      service-role writes). Test inquiry cleaned up after verification.
+- [ ] Public lot data helpers + email validator (pure + I/O split)
+- [ ] Public /lots catalog + /lots/[id] detail + inquiry form
+- [ ] Admin inquiry visibility
+
+## Phase 5+
 
 Not started.
