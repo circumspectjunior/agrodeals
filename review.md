@@ -437,7 +437,13 @@ Decisions locked in during brainstorming:
       attached (FK error 23503); `anon` fully denied for BOTH select and
       insert; `authenticated` can select but cannot insert (only
       service-role writes). Test inquiry cleaned up after verification.
-- [ ] Public lot data helpers + email validator (pure + I/O split)
+- [x] Public lot data helpers + email validator, same pure/I/O split as
+      publicStats: `lotCatalogFormat.ts` (pure — `filterAvailableLots`,
+      `isValidEmail`, `formatEudrStatusForBuyer`) + `lotCatalog.ts` (I/O,
+      server-only — `getAvailableLots`, `getPublicLot`). 13 new Vitest
+      tests (26 total), all against injected data: available-lots filter
+      (excludes lots with a sale), email validator (accepts plausible,
+      rejects malformed incl. whitespace-trim), EUDR pending fallback.
 - [ ] Public /lots catalog + /lots/[id] detail + inquiry form
 - [ ] Admin inquiry visibility
 
