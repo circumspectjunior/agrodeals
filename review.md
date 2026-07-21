@@ -468,6 +468,38 @@ Decisions locked in during brainstorming:
 
 Phase 4 complete. All 4 tasks done and verified against real data.
 
+### Post-review follow-up: email-strictness check + real /admin dashboard
+
+Before merging, the founder asked to actually verify two things rather
+than trust the description:
+
+- **Email validation strictness**: confirmed well-calibrated by running
+  the regex (`/^[^\s@]+@[^\s@]+\.[^\s@]+$/`) against real-world edge
+  cases. It accepts every format a real buyer would type —
+  plus-addressing (`jane+x@gmail.com`), subdomains
+  (`jane@mail.co.uk`), underscore/hyphen local parts, non-ASCII — and
+  rejects only the genuinely undeliverable (no TLD, no `@`, spaces,
+  double-`@`). The only theoretical false-positive is a quoted local-part
+  with a space, which nobody types into a web form. No real-buyer
+  rejection risk.
+- **Badge visibility — real gap found and fixed**: the "N new inquiry"
+  badge worked, but only on `/admin/lots`, while login lands you on
+  `/admin` — which was still the **Phase 0 placeholder** ("Farmer/plot
+  data entry lands in Phase 1"), with no links and no inquiry signal. So
+  the badge did NOT actually answer the brainstorm's "how will I notice
+  without going to look" question — you had to know to navigate to the
+  lots list. Fixed by rebuilding `/admin` into a real landing dashboard:
+  removed the stale copy, added Farmers/Lots nav, and surfaced a total
+  "N new buyer inquiries — review in Lots →" callout right where you land
+  after login. Verified end-to-end via Playwright: submit inquiry → log
+  in → callout is visible immediately on `/admin` → click through and
+  view the inquiry → return to `/admin`, callout gone.
+
+Left mark-viewed-on-visit as-is (matches the approved spec; the inquiry
+content is co-located on the page that marks it viewed, and the `/admin`
+total-count callout gives a persistent signal until every lot's inquiries
+are actually opened).
+
 ## Phase 5+
 
 Not started.
