@@ -456,7 +456,17 @@ Decisions locked in during brainstorming:
       inquiry saved to the DB (verified: correct fields, `viewed_at` null,
       right lot_id) and Resend failed open ("skipping inquiry email —
       inquiry was still saved" logged, never thrown).
-- [ ] Admin inquiry visibility
+- [x] Admin inquiry visibility: Inquiries section on `/admin/lots/[id]`
+      (marks the lot's inquiries viewed on visit — best-effort,
+      idempotent `update ... where viewed_at is null`, logged-not-thrown
+      on failure) + a "N new inquiry/inquiries" badge on `/admin/lots`.
+      Verified the full loop end-to-end via Playwright: public inquiry
+      submitted (viewed_at null) → `/admin/lots` showed "1 new inquiry" →
+      visiting `/admin/lots/[id]` showed the full inquiry AND marked it
+      viewed → returning to `/admin/lots` showed the badge cleared. Test
+      inquiry deleted afterward; `lot_inquiries` back to empty.
+
+Phase 4 complete. All 4 tasks done and verified against real data.
 
 ## Phase 5+
 
