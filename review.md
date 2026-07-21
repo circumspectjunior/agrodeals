@@ -500,6 +500,33 @@ content is co-located on the page that marks it viewed, and the `/admin`
 total-count callout gives a persistent signal until every lot's inquiries
 are actually opened).
 
-## Phase 5+
+## Phase 5 — Farmer Education Page
+
+Spec: `docs/superpowers/specs/2026-07-21-phase-5-farmer-education-design.md`
+
+Decisions locked in during brainstorming:
+- Two modules (post-harvest quality, fair price basics); English
+  authoritative; i18n-ready but NO machine translation ever rendered.
+- Each content piece tagged `universal` vs `agrodeal_specific(+verified)`;
+  unverified specific claims WITHHELD from the page entirely, not labeled
+  — same discipline as unverified EUDR/prices/testimonials, because the
+  audience may not weigh a disclaimer carefully.
+- Empty-module honest "being reviewed" state + a publish-readiness report
+  (verified-vs-held-back ratio per module) so fair-price-basics (mostly
+  agrodeal_specific) doesn't ship mostly empty by surprise.
+- Static in-repo content (no DB, no force-dynamic).
+
+### Tasks
+
+- [x] Content types (`types.ts`) + pure filter (`format.ts`:
+      `isPubliclyShown`, `publicContentFor`, `publishableCount`) + 7 Vitest
+      tests (33 total) against injected data: universal always shown,
+      verified specifics shown, unverified specifics withheld (not
+      labeled), publishableCount `{shown, heldBack}` incl. the all-held-back
+      empty-module case.
+- [ ] Draft module content + report verified/held-back ratio
+- [ ] Public /learn page + nav link
+
+## Phase 6+
 
 Not started.
