@@ -20,10 +20,10 @@ export function Footer() {
           <div className="mt-2 flex flex-wrap gap-x-8 gap-y-2 text-husk/70">
             <span className="eyebrow text-amber">Contact</span>
             <a
-              href="mailto:hello@agrodeal.example"
+              href="mailto:echoneeds@yahoo.com"
               className="text-sm underline decoration-husk/30 underline-offset-4 hover:decoration-husk"
             >
-              hello@agrodeal.example
+              echoneeds@yahoo.com
             </a>
           </div>
 
