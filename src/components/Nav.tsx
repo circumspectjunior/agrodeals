@@ -1,23 +1,34 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
 
+const links = [
+  { href: "/lots", label: "Available lots" },
+  { href: "/transparency", label: "Transparency" },
+  { href: "/learn", label: "For farmers" },
+];
+
 export function Nav() {
   return (
-    <header className="border-b border-zinc-200 dark:border-zinc-800">
+    <header className="border-b border-ink/10">
       <Container>
-        <nav className="flex h-16 items-center gap-6">
-          <Link href="/" className="font-semibold tracking-tight">
+        <nav className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-4">
+          <Link
+            href="/"
+            className="font-display text-xl font-semibold tracking-tight text-roasted"
+          >
             AgroDeal
           </Link>
-          <Link href="/lots" className="text-sm font-medium">
-            Available lots
-          </Link>
-          <Link href="/transparency" className="text-sm font-medium">
-            Transparency
-          </Link>
-          <Link href="/learn" className="text-sm font-medium">
-            For farmers
-          </Link>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-ink/70 transition-colors hover:text-terracotta-deep"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
         </nav>
       </Container>
     </header>
