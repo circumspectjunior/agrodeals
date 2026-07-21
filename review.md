@@ -524,7 +524,17 @@ Decisions locked in during brainstorming:
       verified specifics shown, unverified specifics withheld (not
       labeled), publishableCount `{shown, heldBack}` incl. the all-held-back
       empty-module case.
-- [ ] Draft module content + report verified/held-back ratio
+- [x] Drafted both modules (`content.ts`), i18n-ready
+      (`modulesByLanguage` keyed by language, `en` only). **Publish-
+      readiness report**: Post-harvest quality 5 of 5 shown (0 held — all
+      universal agronomy, fully publishable); Fair price basics 4 of 7
+      shown, 3 held for founder review (the AgroDeal-specific farmgate
+      price / grading process / payment terms, drafted as explicit
+      `[FOUNDER TO CONFIRM]` placeholders with `verified: false`). Neither
+      module is empty, so the "being reviewed" empty-state doesn't trigger
+      with current content — fair-price came out better than the feared
+      "mostly empty" case. Founder flips the 3 held claims to verified
+      once real figures exist.
 - [ ] Public /learn page + nav link
 
 ## Phase 6+
