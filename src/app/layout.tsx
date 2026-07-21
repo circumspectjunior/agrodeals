@@ -1,8 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Hanken_Grotesk, Space_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import "./globals.css";
+
+// Explicit so real phone browsers always lay out at device width (rather
+// than defaulting to a ~980px desktop viewport and shrinking the page).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 // Display — warm, high-character old-style serif (headings/hero). This is
 // the LCP element on most pages, so it's explicitly preloaded and gets

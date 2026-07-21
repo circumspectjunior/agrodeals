@@ -40,6 +40,13 @@ html {
   background: var(--color-husk);
 }
 
+html {
+  /* Stop mobile browsers from auto-inflating text, which can distort the
+     intended responsive type scale. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background: var(--color-husk);
   color: var(--color-ink);
